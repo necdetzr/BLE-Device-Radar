@@ -118,7 +118,8 @@ complexity:
     allowedConstructorParameters: 6
     ignoreDefaultParameters: false
     ignoreDataClasses: true
-    ignoreAnnotatedParameter: []
+    ignoreAnnotatedParameter:
+      - 'Composable'
   MethodOverloading:
     active: false
     allowedOverloads: 6
@@ -330,6 +331,9 @@ naming:
     aliases: ['FunctionName']
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
     functionPattern: '[a-z][a-zA-Z0-9]*'
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Preview'
     excludeClassPattern: '$^'
   FunctionParameterNaming:
     active: true
@@ -376,7 +380,7 @@ naming:
     packagePattern: '[a-z]+(\.[a-z][A-Za-z0-9]*)*'
   TopLevelPropertyNaming:
     active: true
-    constantPattern: '[A-Z][_A-Z0-9]*'
+    constantPattern: '[A-Z][A-Z0-9]*'
     propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
     privatePropertyPattern: '_?[A-Za-z][_A-Za-z0-9]*'
   VariableMaxLength:
@@ -680,6 +684,9 @@ style:
     ignoreConstantDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
     ignoreAnnotation: false
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Preview'
     ignoreNamedArgument: true
     ignoreEnums: false
     ignoreRanges: false
