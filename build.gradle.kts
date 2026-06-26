@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.hilt) apply false
     id("bledeviceradar.root")
     id("dev.detekt") version "2.0.0-alpha.3"
+    alias(libs.plugins.android.library) apply false
 }
 
 detekt {
