@@ -11,8 +11,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             apply(plugin = "com.android.application")
-            apply(plugin = "nowinandroid.android.lint")
-            apply(plugin = "com.dropbox.dependency-guard")
 
             extensions.configure<ApplicationExtension> {
                 configureKotlinAndroid(this)
