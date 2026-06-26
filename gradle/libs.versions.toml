@@ -17,6 +17,8 @@ room = "2.8.3"
 ksp = "2.3.4"
 hilt = "2.59"
 androidxLifecycle = "2.10.0"
+appcompat = "1.7.1"
+material = "1.14.0"
 
 [libraries]
 
@@ -56,6 +58,8 @@ ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devto
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-compiler-gradlePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -77,6 +81,7 @@ bledeviceradar-android-test = {id = "bledeviceradar.android.test"}
 bledeviceradar-hilt = {id = "bledeviceradar.hilt"}
 bledeviceradar-jvm-library = {id = "bledeviceradar.jvm.library"}
 bledeviceradar-root = {id = "bledeviceradar.root"}
+android-library = { id = "com.android.library", version.ref = "agp" }
 
 
 

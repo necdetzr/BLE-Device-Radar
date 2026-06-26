@@ -17,6 +17,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 defaultConfig.targetSdk = 36
                 testOptions.animationsDisabled = true
             }
+            
             extensions.configure<ApplicationAndroidComponentsExtension> {
                 configureBadgingTasks(this)
             }

@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "BLE Device Radar"
 include(":app")
+include(":core:designsystem")
