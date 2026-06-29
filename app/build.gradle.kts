@@ -26,4 +26,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(project(":core:designsystem"))
+    implementation(project(":core:common"))
 }
