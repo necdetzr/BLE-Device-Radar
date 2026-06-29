@@ -19,10 +19,14 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
+
+const val SCAN_PERIOD = 15000L
+
 class BleScannerImpl @Inject constructor(
     private val bluetoothAdapter: BluetoothAdapter,
     @Dispatcher(BleDispatchers.Default) private val dispatcher : CoroutineDispatcher
 ) : BleScanner {
+
     private val bluetoothLeScanner : BluetoothLeScanner?
         get() = bluetoothAdapter.bluetoothLeScanner
 
@@ -54,7 +58,7 @@ class BleScannerImpl @Inject constructor(
         }
         currentCallBack = callback
         scanner.startScan(null,settings,callback)
-        delay(15000L)
+        delay(SCAN_PERIOD)
         stopScanning()
         close()
 
