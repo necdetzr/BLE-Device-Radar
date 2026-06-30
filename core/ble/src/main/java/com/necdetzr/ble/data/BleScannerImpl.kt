@@ -7,10 +7,10 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import com.necdetzr.ble.domain.BleScanner
-import com.necdetzr.ble.domain.model.BleDevice
 import com.necdetzr.common.network.BleDispatchers
 import com.necdetzr.common.network.Dispatcher
 import com.necdetzr.common.result.Result
+import com.necdetzr.model.BleDevice
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
