@@ -1,4 +1,4 @@
-package com.necdetzr.ble.domain.model
+package com.necdetzr.model
 
 data class BleDevice(
     val name:String?,

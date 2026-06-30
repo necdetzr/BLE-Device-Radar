@@ -24,3 +24,5 @@ rootProject.name = "BLE Device Radar"
 include(":app")
 include(":core:designsystem")
 include(":core:common")
+include(":core:ble")
+include(":core:model")
