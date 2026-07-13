@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.bledeviceradar.android.feature)
     alias(libs.plugins.bledeviceradar.android.library.compose)
-
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.bledeviceradar.hilt)
 }
 
