@@ -6,16 +6,18 @@ import org.gradle.kotlin.dsl.dependencies
 class AndroidFeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
+
             pluginManager.apply {
                 apply("bledeviceradar.android.library")
-
                 apply("bledeviceradar.hilt")
             }
 
             dependencies {
 
                 "implementation"(libs.findLibrary("androidx.lifecycle.runtimeCompose").get())
-                "implementation"(libs.findLibrary("androidx.lifecycle.viewModelCompose").get())
+                "implementation"(libs.findLibrary("androidx.compose.foundation").get())
+                "implementation"(libs.findLibrary("androidx.compose.material3").get())
+
                 "implementation"(libs.findLibrary("androidx.hilt.lifecycle.viewModelCompose").get())
                 "implementation"(libs.findLibrary("androidx.navigation3.runtime").get())
                 "androidTestImplementation"(

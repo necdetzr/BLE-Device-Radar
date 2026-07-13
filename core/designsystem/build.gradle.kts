@@ -12,6 +12,8 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     api(libs.androidx.compose.material3)
+    api(libs.androidx.compose.material3.adaptive)
+    api(libs.androidx.compose.material3.navigationSuite)
     implementation(libs.androidx.compose.material.iconsExtended)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
