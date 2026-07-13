@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.necdetzr.designsystem.icons.BleIcons
 import com.necdetzr.history.api.HistoryNavKey
-import com.necdetzr.radar.R
 import com.necdetzr.radar.api.RadarNavKey
 import com.necdetzr.settings.api.SettingsNavKey
 
@@ -18,8 +17,8 @@ data class TopLevelNavItem(
 val RADAR = TopLevelNavItem(
     selectedIcon = BleIcons.Radar,
     unSelectedIcon = BleIcons.Radar,
-    iconTextId = R.string.feature_radar_title,
-    titleTextId = R.string.feature_radar_title
+    iconTextId = com.necdetzr.radar.R.string.feature_radar_title,
+    titleTextId = com.necdetzr.radar.R.string.feature_radar_title,
 )
 
 val HISTORY = TopLevelNavItem(
