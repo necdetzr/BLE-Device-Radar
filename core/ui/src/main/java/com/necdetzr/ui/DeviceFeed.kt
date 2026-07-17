@@ -1,8 +1,12 @@
 package com.necdetzr.ui
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.necdetzr.model.BleDevice
+import java.util.UUID
 
 fun LazyListScope.deviceFeed(
     feedUiState: DeviceFeedUiState,
@@ -14,12 +18,13 @@ fun LazyListScope.deviceFeed(
         is DeviceFeedUiState.Scanning -> {
             items(
                 items = feedUiState.devices,
-                key = {it.macAddress},
+                key = { it.macAddress },
                 contentType = {"deviceFeedItem"}
             ){
                 BleDeviceCard(
                     bleDevice = it,
-                    onClick = {}
+                    onClick = {},
+                    modifier = Modifier.padding(8.dp)
                 )
             }
         }
@@ -31,7 +36,8 @@ fun LazyListScope.deviceFeed(
             ){
                 BleDeviceCard(
                     bleDevice = it,
-                    onClick = {onDeviceClick(it)}
+                    onClick = {onDeviceClick(it)},
+                    modifier = Modifier.padding(8.dp)
                 )
             }
 

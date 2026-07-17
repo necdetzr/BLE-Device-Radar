@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BLEDeviceRadar"
         android:name=".BleApplication"
+
         >
 
         <activity
@@ -26,5 +27,7 @@
             </intent-filter>
         </activity>
     </application>
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
 </manifest>

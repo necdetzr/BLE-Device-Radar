@@ -3,10 +3,12 @@ package com.necdetzr.designsystem.icons
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.BluetoothSearching
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PlayCircleFilled
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.SignalCellularAlt1Bar
 import androidx.compose.material.icons.filled.SignalCellularAlt2Bar
+import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material.icons.rounded.Bluetooth
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Refresh
@@ -25,4 +27,6 @@ object BleIcons {
     val RssiLow = Icons.Default.SignalCellularAlt1Bar
     val RssiMedium = Icons.Default.SignalCellularAlt2Bar
     val RssiHigh = Icons.Default.SignalCellularAlt
+    val Start = Icons.Default.PlayCircleFilled
+    val Stop = Icons.Default.StopCircle
 }

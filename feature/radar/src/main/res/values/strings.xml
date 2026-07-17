@@ -2,4 +2,16 @@
 <resources>
     <string name="feature_radar_title">Radar</string>
     <string name="feature_radar_scanning">Scanning</string>
+    <string name="feature_radar_bluetooth_not_supported">Bluetooth Not Supported On This Device.</string>
+    <string name="feature_radar_bluetooth_permission_denied">Bluetooth Permission Denied.</string>
+    <string name="feature_radar_scan_failed">Scan failed due to an error.
+        Please be sure that bluetooth is available and try again.</string>
+    <string name="feature_radar_bluetooth_enable_denied">Bluetooth is needed to scan. Please enable your bluetooth.</string>
+    <string name="feature_radar_start_scan">Start Scan</string>
+    <string name="feature_radar_discovered_devices">Discovered Devices</string>
+    <string name="feature_radar_no_devices">No devices detected yet.</string>
+    <string name="feature_radar_ready_to_scan">Ready to Scan</string>
+    <string name="feature_radar_ready_title">Start a sweep to find nearby BLE devices</string>
+    <string name="feature_radar_completed">Scan is completed</string>
+    <string name="feature_radar_devices_found">%1$d devices found</string>
 </resources>

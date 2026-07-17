@@ -6,5 +6,4 @@ import kotlinx.coroutines.flow.Flow
 
 interface BleRadarRepository {
     fun startScanning(): Flow<Result<BleDevice>>
-    fun stopScanning()
 }

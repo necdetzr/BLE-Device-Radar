@@ -2,6 +2,7 @@ package com.necdetzr.designsystem.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -10,9 +11,19 @@ import androidx.compose.ui.text.style.LineHeightStyle.Trim
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.sp
+import com.necdetzr.designsystem.R
+
+val Quicksand = FontFamily(
+    Font(R.font.quicksand_light, FontWeight.Light),
+    Font(R.font.quicksand_regular, FontWeight.Normal),
+    Font(R.font.quicksand_medium, FontWeight.Medium),
+    Font(R.font.quicksand_semibold, FontWeight.SemiBold),
+    Font(R.font.quicksand_bold, FontWeight.Bold)
+)
 
 internal val Typograph = Typography(
     displayLarge = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Normal,
         fontSize = 57.sp,
         lineHeight = 64.sp,
@@ -21,6 +32,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     displayMedium = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Normal,
         fontSize = 45.sp,
         lineHeight = 52.sp,
@@ -29,6 +41,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     displaySmall = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Normal,
         fontSize = 36.sp,
         lineHeight = 44.sp,
@@ -37,6 +50,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     headlineLarge = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Normal,
         fontSize = 32.sp,
         lineHeight = 40.sp,
@@ -45,6 +59,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     headlineMedium = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Normal,
         fontSize = 28.sp,
         lineHeight = 36.sp,
@@ -53,6 +68,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     headlineSmall = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Normal,
         fontSize = 24.sp,
         lineHeight = 32.sp,
@@ -65,6 +81,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     titleLarge = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
@@ -77,6 +94,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     titleMedium = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Bold,
         fontSize = 18.sp,
         lineHeight = 24.sp,
@@ -85,6 +103,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     titleSmall = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
@@ -92,8 +111,8 @@ internal val Typograph = Typography(
         textDirection = TextDirection.Ltr,
         textAlign = TextAlign.Left,
     ),
-    // Default text style
     bodyLarge = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
@@ -106,6 +125,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     bodyMedium = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
@@ -114,6 +134,7 @@ internal val Typograph = Typography(
         textAlign = TextAlign.Left,
     ),
     bodySmall = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
@@ -121,8 +142,8 @@ internal val Typograph = Typography(
         textDirection = TextDirection.Ltr,
         textAlign = TextAlign.Left,
     ),
-    // Used for Button
     labelLarge = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
@@ -134,8 +155,8 @@ internal val Typograph = Typography(
         textDirection = TextDirection.Ltr,
         textAlign = TextAlign.Left,
     ),
-    // Used for Navigation items
     labelMedium = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
@@ -147,8 +168,8 @@ internal val Typograph = Typography(
         textDirection = TextDirection.Ltr,
         textAlign = TextAlign.Left,
     ),
-    // Used for Tag
     labelSmall = TextStyle(
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Medium,
         fontSize = 10.sp,
         lineHeight = 14.sp,

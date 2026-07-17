@@ -15,6 +15,13 @@ dependencies {
     implementation("androidx.compose.animation:animation:1.11.4")
     implementation(project(":core:navigation"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:ui"))
+    implementation(project(":core:model"))
+    implementation(project(":core:data"))
+    implementation(project(":core:common"))
+    implementation(libs.androidx.activity.compose)
+
+
     implementation(libs.androidx.compose.material3)
 
 
