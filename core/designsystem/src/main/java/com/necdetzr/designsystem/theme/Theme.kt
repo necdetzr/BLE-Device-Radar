@@ -8,7 +8,9 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 
 private val LightColorScheme = lightColorScheme(
@@ -61,10 +63,18 @@ fun BLEDeviceRadarTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+    val backgroundTheme = BackgroundTheme(
+        color =  colorScheme.background,
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography =Typograph,
-        content = content
     )
+    CompositionLocalProvider(
+        LocalBackgroundTheme provides backgroundTheme
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography =Typograph,
+            content = content
+        )
+    }
+
 }
