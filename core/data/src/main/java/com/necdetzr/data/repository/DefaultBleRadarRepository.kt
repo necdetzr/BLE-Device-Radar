@@ -13,7 +13,4 @@ class DefaultBleRadarRepository @Inject constructor(
         return bleScanner.startScanning()
     }
 
-    override fun stopScanning() {
-        bleScanner.stopScanning()
-    }
 }
