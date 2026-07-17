@@ -27,6 +27,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.necdetzr.bledeviceradar.navigation.TOP_LEVEL_NAV_ITEMS
+import com.necdetzr.designsystem.component.BleBackground
 import com.necdetzr.designsystem.component.BleNavigationSuiteScaffold
 import com.necdetzr.designsystem.component.TopAppBar
 import com.necdetzr.history.navigation.historyEntry
@@ -45,95 +46,92 @@ internal fun BleApp(
     appState: BleAppState,
     modifier: Modifier = Modifier,
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo(),
-
-
 ){
     val navigator = remember{ Navigator(appState.navigationState) }
+    BleBackground {
+        BleNavigationSuiteScaffold(
+            navigationSuiteItems ={
+                TOP_LEVEL_NAV_ITEMS.forEach { (navKey,navItem)->
+                    val selected = navKey == appState.navigationState.currentTopKey
+                    item(
+                        selected = selected,
+                        onClick = {navigator.navigate(navKey)},
+                        icon = {
+                            Icon(
+                                imageVector = navItem.unSelectedIcon,
+                                contentDescription = null
+                            )
+                        },
+                        selectedIcon = {
+                            Icon(
+                                imageVector = navItem.selectedIcon,
+                                contentDescription = null
+                            )
+                        },
+                        label ={
+                            Text(
+                                text = stringResource(navItem.iconTextId)
+                            )
+                        },
 
-    BleNavigationSuiteScaffold(
-        navigationSuiteItems ={
-            TOP_LEVEL_NAV_ITEMS.forEach { (navKey,navItem)->
-                val selected = navKey == appState.navigationState.currentTopKey
-                item(
-                    selected = selected,
-                    onClick = {navigator.navigate(navKey)},
-                    icon = {
-                        Icon(
-                            imageVector = navItem.unSelectedIcon,
-                            contentDescription = null
                         )
-                    },
-                    selectedIcon = {
-                        Icon(
-                            imageVector = navItem.selectedIcon,
-                            contentDescription = null
-                        )
-                    },
-                    label ={
-                        Text(
-                            text = stringResource(navItem.iconTextId)
-                        )
-                    },
-
-                )
-            }
-        },
-        windowAdaptiveInfo = windowAdaptiveInfo
-    ) {
-        Scaffold(
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .consumeWindowInsets(paddingValues)
-                    .windowInsetsPadding(
-                        WindowInsets.safeDrawing.only(
-                            WindowInsetsSides.Horizontal
-                        )
-                    )
-            ) {
-                var shouldShowTopAppBar = false
-                if(appState.navigationState.currentKey in appState.navigationState.topLevelKeys){
-                    shouldShowTopAppBar = true
-
-                    val destination = TOP_LEVEL_NAV_ITEMS[appState.navigationState.currentTopKey]
-                        ?: error("Top level nav item not found for ${appState.navigationState.currentTopKey}")
-                    TopAppBar(
-                        title = "Ble Radar Good Radar"
-                    )
                 }
-                Box(
-                    modifier = Modifier.consumeWindowInsets(
-                        if(shouldShowTopAppBar){
-                            WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
+            },
+            windowAdaptiveInfo = windowAdaptiveInfo
+        ) {
+            Scaffold(
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onBackground,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            ) { paddingValues ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .consumeWindowInsets(paddingValues)
+                        .windowInsetsPadding(
+                            WindowInsets.safeDrawing.only(
+                                WindowInsetsSides.Horizontal
+                            )
+                        )
+                ) {
+                    var shouldShowTopAppBar = false
+                    if(appState.navigationState.currentKey in appState.navigationState.topLevelKeys){
+                        shouldShowTopAppBar = true
 
-                        }else{
-                            WindowInsets(0, 0, 0, 0)
-
-                        }
-                    )
-                ){
-                    val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
-                    val entryProvider = entryProvider {
-                        radarEntry(navigator)
-                        historyEntry(navigator)
-                        settingsEntry(navigator)
+                        val destination = TOP_LEVEL_NAV_ITEMS[appState.navigationState.currentTopKey]
+                            ?: error("Top level nav item not found for ${appState.navigationState.currentTopKey}")
+                        TopAppBar(
+                            title = "Ble Radar Good Radar"
+                        )
                     }
-                    NavDisplay(
-                        entries = appState.navigationState.toEntries(entryProvider),
-                        sceneStrategy = listDetailStrategy,
-                        onBack = {navigator.goBack()}
-                    )
+                    Box(
+                        modifier = Modifier.consumeWindowInsets(
+                            if(shouldShowTopAppBar){
+                                WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
 
+                            }else{
+                                WindowInsets(0, 0, 0, 0)
 
-
+                            }
+                        )
+                    ){
+                        val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
+                        val entryProvider = entryProvider {
+                            radarEntry(navigator)
+                            historyEntry(navigator)
+                            settingsEntry(navigator)
+                        }
+                        NavDisplay(
+                            entries = appState.navigationState.toEntries(entryProvider),
+                            sceneStrategy = listDetailStrategy,
+                            onBack = {navigator.goBack()}
+                        )
+                    }
                 }
             }
-        }
 
+        }
     }
+
 
 }
