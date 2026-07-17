@@ -1,24 +1,22 @@
 package com.necdetzr.radar
 
 import android.Manifest
-import android.R.attr.onClick
+import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,32 +29,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -67,23 +64,117 @@ import com.necdetzr.designsystem.icons.BleIcons
 import com.necdetzr.model.BleDevice
 import com.necdetzr.ui.DeviceFeedUiState
 import com.necdetzr.ui.deviceFeed
-import java.util.Collections.rotate
 
+
+
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 internal fun RadarScreen(
     onDeviceClick: (BleDevice) -> Unit,
     modifier: Modifier = Modifier,
-
     viewModel: RadarViewModel = hiltViewModel()
-){
+) {
 
     val uiState by viewModel.feedUiState.collectAsStateWithLifecycle()
-    RadarScreen (
+    val context = LocalContext.current
+    val userMessage by viewModel.radarMessage.collectAsStateWithLifecycle()
+    val snackBarHostState = remember {
+        SnackbarHostState()
+    }
+    val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    val bluetoothAdapter = bluetoothManager.adapter
+
+    val permissions = remember {
+        arrayOf(
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_CONNECT
+        )
+    }
+    LaunchedEffect(userMessage) {
+        val currentMessage = userMessage ?: return@LaunchedEffect
+        snackBarHostState.showSnackbar(
+            message = context.getString(
+                currentMessage.stringResource
+            ),
+        )
+        viewModel.onUserMessageShown()
+    }
+    DisposableEffect(context) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if(intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED){
+                    val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+                    if(state == BluetoothAdapter.STATE_OFF || state == BluetoothAdapter.STATE_TURNING_OFF){
+                        viewModel.onStopButtonClicked()
+                    }
+                }
+            }
+        }
+        val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+
+    }
+    val enableBluetoothLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            viewModel.onStartButtonClicked()
+        }else{
+            viewModel.onBluetoothEnableDenied()
+        }
+    }
+    LaunchedEffect(bluetoothAdapter) {
+        if (bluetoothAdapter == null) {
+            viewModel.onBluetoothNotSupported()
+        }
+    }
+
+    if (bluetoothAdapter == null) return
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissionMap ->
+        val areAllPermissionsGranted = permissionMap.values.all { it }
+        if (areAllPermissionsGranted) {
+            if (bluetoothAdapter?.isEnabled == true) {
+                viewModel.onStartButtonClicked()
+            } else {
+                val enableBtIntent = android.content.Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                enableBluetoothLauncher.launch(enableBtIntent)
+            }
+        }else{
+            viewModel.onPermissionDenied()
+        }
+    }
+
+    RadarScreen(
         uiState = uiState,
-        onDeviceClick = {
+        onDeviceClick = onDeviceClick,
+        snackbarHostState = snackBarHostState,
+        onButtonClick = {
+            val hasAllPermissions = permissions.all { permission ->
+                ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+            }
+            if (hasAllPermissions) {
+                if (bluetoothAdapter.isEnabled) {
+                    viewModel.onStartButtonClicked()
+                } else {
+                    val enableBtIntent = android.content.Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                    enableBluetoothLauncher.launch(enableBtIntent)
+                }
+            } else {
+                permissionLauncher.launch(permissions)
+            }
         },
-        onButtonClick = { viewModel.onStartButtonClicked() },
-        onCancelClick = {viewModel.onStopButtonClicked()}
+        onCancelClick = viewModel::onStopButtonClicked,
+        modifier = modifier
     )
 }
 
@@ -91,96 +182,89 @@ internal fun RadarScreen(
 @Composable
 internal fun RadarScreen(
     uiState: DeviceFeedUiState,
+    snackbarHostState: SnackbarHostState,
     onDeviceClick: (BleDevice) -> Unit,
     onButtonClick:()->Unit,
     onCancelClick:()->Unit,
+    modifier:Modifier = Modifier
 ){
-    val permissions = remember {
-        arrayOf(
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT
-        )
-    }
-    val context = LocalContext.current
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissionMap->
-        val areAllPermissionsGranted = permissionMap.values.all { it }
-        if(areAllPermissionsGranted) onButtonClick()
-    }
-    Spacer(Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
-            .padding(horizontal = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState
+            )
+        },
+        modifier = modifier,
+        contentWindowInsets = WindowInsets.safeDrawing,
 
-    ) {
-        RadarAnimation(
-            isScanning = uiState is DeviceFeedUiState.Scanning
-        )
+        ) { paddingValues ->
 
-        when (uiState) {
-            is DeviceFeedUiState.Idle -> {
-                ScanReadyTitle()
-            }
-            is DeviceFeedUiState.Scanning -> {
-                ScanningTitle(deviceFounded = uiState.devices.size)
-            }
-            is DeviceFeedUiState.Success -> {
-                ScanReadyTitle()
-            }
-        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
 
-        DeviceListTitle()
-        Box(modifier = Modifier.weight(1f)) {
-
+        ) {
+            RadarAnimation(
+                isScanning = uiState is DeviceFeedUiState.Scanning
+            )
 
             when (uiState) {
-                is DeviceFeedUiState.Idle -> Box(
-                    modifier = Modifier
-                ) {
-                    IdleDeviceList()
+                is DeviceFeedUiState.Idle -> {
+                    ScanReadyTitle()
                 }
-
-                is DeviceFeedUiState.Scanning -> LazyColumn {
-                    deviceFeed(
-                        feedUiState = uiState,
-                        onDeviceClick = onDeviceClick
-                    )
+                is DeviceFeedUiState.Scanning -> {
+                    ScanningTitle(devicesFounded = uiState.devices.size)
                 }
-
-                is DeviceFeedUiState.Success -> LazyColumn {
-                    deviceFeed(
-                        feedUiState = uiState,
-                        onDeviceClick = onDeviceClick
-                    )
+                is DeviceFeedUiState.Success -> {
+                    ScanCompletedTitle(devicesFounded = uiState.devices.size)
                 }
             }
-        }
-        ScanButton(
-            onClick ={
-                if(uiState is DeviceFeedUiState.Scanning){
-                    onCancelClick()
 
-                }else{
-                    val hasAllPermissions = permissions.all { permission ->
-                        ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+            DeviceListTitle()
+            Box(modifier = Modifier.weight(1f)) {
+
+
+                when (uiState) {
+                    is DeviceFeedUiState.Idle -> Box(
+                        modifier = Modifier
+                    ) {
+                        IdleDeviceList()
                     }
-                    if (hasAllPermissions) {
-                        onButtonClick()
-                    } else {
-                        permissionLauncher.launch(permissions)
+
+                    is DeviceFeedUiState.Scanning -> LazyColumn {
+                        deviceFeed(
+                            feedUiState = uiState,
+                            onDeviceClick = onDeviceClick
+                        )
+                    }
+
+                    is DeviceFeedUiState.Success -> LazyColumn {
+                        deviceFeed(
+                            feedUiState = uiState,
+                            onDeviceClick = onDeviceClick
+                        )
                     }
                 }
-            },
-            modifier = Modifier.padding(vertical = 12.dp).height(56.dp),
-            isScanning = uiState is DeviceFeedUiState.Scanning
-        )
-        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
+            }
+            ScanButton(
+                onClick ={
+                    if(uiState is DeviceFeedUiState.Scanning){
+                        onCancelClick()
 
-
+                    }else{
+                        onButtonClick()
+                    }
+                },
+                modifier = Modifier.padding(vertical = 12.dp).height(56.dp),
+                isScanning = uiState is DeviceFeedUiState.Scanning
+            )
+        }
     }
+
 
 
 }
@@ -211,12 +295,12 @@ private fun ScanButton(
             Spacer(Modifier.width(6.dp))
             if (isScanning){
                 Text(
-                    text = "Scanning",
+                    text = stringResource(R.string.feature_radar_scanning),
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }else{
                 Text(
-                    text = "Start Scan",
+                    text = stringResource(R.string.feature_radar_start_scan),
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
@@ -230,7 +314,7 @@ private fun ScanButton(
 private fun DeviceListTitle(){
     Column {
         Text(
-            text = "Discovered Devices",
+            text = stringResource(R.string.feature_radar_discovered_devices),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.titleSmall
         )
@@ -260,7 +344,7 @@ private fun IdleDeviceList(){
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "No Devices detected yet.",
+                text = stringResource(R.string.feature_radar_no_devices),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.titleSmall
             )
@@ -276,36 +360,62 @@ private fun ScanReadyTitle(){
         modifier = Modifier.padding(vertical = 16.dp)
     ) {
         Text(
-            text = "Ready to Scan",
+            text = stringResource(R.string.feature_radar_ready_to_scan),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Start a sweep to find nearby BLE devices",
+            text = stringResource(R.string.feature_radar_ready_title),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center
         )
     }
-
 }
 @Composable
 private fun ScanningTitle(
-    deviceFounded:Int
+    devicesFounded:Int
 ){
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(vertical = 8.dp)
     ) {
         Text(
-            text = "Scanning",
+            text = stringResource(R.string.feature_radar_scanning),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "$deviceFounded devices found.",
+            text = stringResource(
+                R.string.feature_radar_devices_found,
+                devicesFounded
+            ),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+    }
+}
+@Composable
+private fun ScanCompletedTitle(
+    devicesFounded:Int
+){
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.feature_radar_completed),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = stringResource(
+                R.string.feature_radar_devices_found,
+                devicesFounded
+            ),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -315,16 +425,23 @@ private fun ScanningTitle(
 
 @Composable
 fun RadarAnimation(isScanning: Boolean) {
-    val infiniteTransition = rememberInfiniteTransition(label = "")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = ""
-    )
+    val rotation = remember { Animatable(0f) }
+    LaunchedEffect(isScanning) {
+        if(isScanning){
+            rotation.snapTo(0f)
+            while(true){
+                rotation.animateTo(
+                    targetValue = rotation.value + 360f,
+                    animationSpec = tween(
+                        durationMillis = 2500,
+                        easing = LinearEasing
+                    )
+                )
+            }
+        }else{
+            rotation.stop()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -360,7 +477,7 @@ fun RadarAnimation(isScanning: Boolean) {
 
             if (isScanning) {
                 withTransform({
-                    rotate(degrees = rotation, pivot = center)
+                    rotate(degrees = rotation.value, pivot = center)
                 }) {
                     val sweepGradient = Brush.sweepGradient(
                         colors = listOf(
@@ -393,6 +510,21 @@ fun RadarAnimation(isScanning: Boolean) {
         }
     }
 }
+private val RadarUserMessage.stringResource: Int
+    get() = when (this) {
+        RadarUserMessage.BluetoothNotSupported ->
+            R.string.feature_radar_bluetooth_not_supported
+
+        RadarUserMessage.PermissionDenied ->
+            R.string.feature_radar_bluetooth_permission_denied
+
+        RadarUserMessage.ScanFailed ->
+            R.string.feature_radar_scan_failed
+
+        RadarUserMessage.BluetoothEnableDenied ->
+            R.string.feature_radar_bluetooth_enable_denied
+    }
+
 @Preview
 @Composable
 private fun ScanButtonPreview(){
