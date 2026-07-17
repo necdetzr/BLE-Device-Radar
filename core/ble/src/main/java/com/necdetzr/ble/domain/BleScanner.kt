@@ -7,5 +7,4 @@ import kotlinx.coroutines.flow.Flow
 
 interface BleScanner {
     fun startScanning() : Flow<Result<BleDevice>>
-    fun stopScanning()
 }

@@ -30,7 +30,6 @@ class BleScannerImpl @Inject constructor(
     private val bluetoothLeScanner : BluetoothLeScanner?
         get() = bluetoothAdapter.bluetoothLeScanner
 
-    private var currentCallBack: ScanCallback? = null
     @SuppressLint("MissingPermission")
     override fun startScanning(): Flow<Result<BleDevice>> = callbackFlow{
         val scanner = bluetoothLeScanner
@@ -44,8 +43,17 @@ class BleScannerImpl @Inject constructor(
         val callback = object : ScanCallback() {
             override fun onScanResult(callbackType:Int,result: ScanResult?){
                 result?.let {
+                    val deviceName = try {
+                        when {
+                            !it.device.name.isNullOrBlank() -> it.device.name
+                            !it.scanRecord?.deviceName.isNullOrBlank() -> it.scanRecord?.deviceName
+                            else -> "Unknown Device"
+                        }
+                    } catch (e: SecurityException) {
+                        "Unknown Device"
+                    }
                     val device = BleDevice(
-                        name = it.device.name,
+                        name = deviceName,
                         macAddress = it.device.address,
                         rssi = it.rssi
                     )
@@ -56,24 +64,10 @@ class BleScannerImpl @Inject constructor(
                 close(Exception("Scan failed with error code $errorCode"))
             }
         }
-        currentCallBack = callback
         scanner.startScan(null,settings,callback)
-        delay(SCAN_PERIOD)
-        stopScanning()
-        close()
-
         awaitClose {
-            stopScanning()
+            scanner.stopScan(callback)
         }
     }.flowOn(dispatcher)
 
-    @SuppressLint("MissingPermission")
-    override fun stopScanning() {
-        val scanner = bluetoothLeScanner
-        val callback = currentCallBack
-        if(scanner !=null && callback != null){
-            scanner.stopScan(callback)
-        }
-        currentCallBack = null
-    }
 }
