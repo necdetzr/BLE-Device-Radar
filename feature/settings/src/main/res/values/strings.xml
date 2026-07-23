@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="feature_settings_title">Settings</string>
-
+    <string name="feature_settings_text">Configure scanner parameters preferences</string>
+    <string name="feature_settings_scanning">Scanning</string>
+    <string name="feature_settings_rssi_title">RSSI Threshold Filter</string>
+    <string name="feature_settings_rssi_text">Ignore signals weaker than set value</string>
+    <string name="feature_settings_weak">Weak(-100)</string>
+    <string name="feature_settings_strong">Strong(-20)</string>
+    <string name="feature_settings_appearance">Appearance</string>
+    <string name="feature_settings_dark">Dark</string>
+    <string name="feature_settings_light">Light</string>
+    <string name="feature_settings_system">System</string>
+    <string name="feature_settings_about_system">About System</string>
+    <string name="feature_settings_version">Version Info</string>
 </resources>
