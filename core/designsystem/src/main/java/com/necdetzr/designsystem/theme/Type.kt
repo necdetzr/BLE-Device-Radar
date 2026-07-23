@@ -51,7 +51,7 @@ internal val Typograph = Typography(
     ),
     headlineLarge = TextStyle(
         fontFamily = Quicksand,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp,
@@ -60,7 +60,7 @@ internal val Typograph = Typography(
     ),
     headlineMedium = TextStyle(
         fontFamily = Quicksand,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
