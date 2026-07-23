@@ -1,28 +1,29 @@
 package com.necdetzr.radar
 
-import android.util.Log
-import android.util.Log.e
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.necdetzr.common.result.Result
 import com.necdetzr.data.repository.BleRadarRepository
+import com.necdetzr.data.repository.UserDataRepository
 import com.necdetzr.model.BleDevice
 import com.necdetzr.ui.DeviceFeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.timeout
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class RadarViewModel @Inject constructor(
-    private val bleRadarRepository: BleRadarRepository
+    private val bleRadarRepository: BleRadarRepository,
+    private val userDataRepository: UserDataRepository
 
 ): ViewModel() {
 
@@ -49,55 +50,58 @@ class RadarViewModel @Inject constructor(
 
 
         scanJob = viewModelScope.launch {
-            bleRadarRepository
-                .startScanning()
-                .timeout(15.seconds)
-                .catch { e->
-                    when(e){
-                        is TimeoutCancellationException ->{
-                            completeScanning()
-                        }
-                        else -> {
-                            _feedUiState.value = DeviceFeedUiState.Idle
-                            _radarMessage.value = RadarUserMessage.ScanFailed
+           val userData = userDataRepository.userPreferences.first()
+            val scanPeriod = userData.scanPeriod
+            val currentRssi = userData.rssiRange
+
+            withTimeoutOrNull(scanPeriod.milliseconds){
+                bleRadarRepository
+                    .startScanning()
+                    .catch {
+                        _radarMessage.value = RadarUserMessage.ScanFailed
+                    }
+                    .collect { result->
+                        when(result){
+                            is Result.Success -> {
+                                val newDevice = result.data
+                                scannedDevices[newDevice.macAddress] = newDevice
+                                _feedUiState.value =
+                                    DeviceFeedUiState.Scanning(sortedDevices(currentRssi))
+                            }
+                            is Result.Error -> {
+                                _radarMessage.value =
+                                    RadarUserMessage.ScanFailed
+
+                            }
+                            is Result.Loading -> Unit
                         }
                     }
+            }
+            completeScanning(currentRssi)
+            scanJob = null
 
-                }
-                .collect { result->
-                    when(result){
-                        is Result.Success -> {
-                            val newDevice = result.data
-                            scannedDevices[newDevice.macAddress] = newDevice
-                            _feedUiState.value =
-                                DeviceFeedUiState.Scanning(sortedDevices())
-                        }
-                        is Result.Error -> {
-                            _feedUiState.value =
-                                DeviceFeedUiState.Success(sortedDevices())
-                            _radarMessage.value = RadarUserMessage.ScanFailed
-                            scanJob?.cancel()
-
-                        }
-                        is Result.Loading -> Unit
-                    }
-                }
         }
     }
-    private fun completeScanning(){
-        _feedUiState.value =
-            DeviceFeedUiState.Success(
-                devices = sortedDevices()
-            )
+    private fun completeScanning(rssi:Int){
+            _feedUiState.value =
+                DeviceFeedUiState.Success(
+                    devices = sortedDevices(rssi)
+                )
+
+
     }
-    private fun sortedDevices(): List<BleDevice> =
+    private fun sortedDevices(rssi:Int): List<BleDevice> =
         scannedDevices.values
+            .filter { device -> device.rssi >= rssi }
             .sortedByDescending(BleDevice::rssi)
 
     fun onStopButtonClicked(){
         scanJob?.cancel()
         scanJob = null
-        completeScanning()
+        viewModelScope.launch {
+            val currentRssi = userDataRepository.userPreferences.first().rssiRange
+            completeScanning(currentRssi)
+        }
 
     }
     fun onBluetoothNotSupported(){

@@ -3,6 +3,7 @@ package com.necdetzr.datastore
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.necdetzr.model.SortType
@@ -19,6 +20,7 @@ class BlePreferencesDataSource @Inject constructor(
         val THEME_CONFIG = stringPreferencesKey("theme_config")
         val SORT_TYPE = stringPreferencesKey("sort_type")
         val SCAN_PERIOD = longPreferencesKey("scan_period")
+        val RSSI_RANGE = intPreferencesKey("rssi_range")
     }
     val userData: Flow<UserPreferences> = dataStore.data.map { preferences->
         UserPreferences(
@@ -34,7 +36,8 @@ class BlePreferencesDataSource @Inject constructor(
             }catch (e: IllegalStateException){
                 SortType.BY_RSSI
             },
-            scanPeriod = preferences[PreferencesKeys.SCAN_PERIOD] ?: 15000L
+            scanPeriod = preferences[PreferencesKeys.SCAN_PERIOD] ?: 15000L,
+            rssiRange = preferences[PreferencesKeys.RSSI_RANGE] ?: -90
 
         )
     }
@@ -51,6 +54,11 @@ class BlePreferencesDataSource @Inject constructor(
     suspend fun updateScanPeriod(scanPeriod:Long){
         dataStore.edit { preferences->
             preferences[PreferencesKeys.SCAN_PERIOD] = scanPeriod
+        }
+    }
+    suspend fun updateRssiRange(rssiRange:Int){
+        dataStore.edit { preferences->
+            preferences[PreferencesKeys.RSSI_RANGE] = rssiRange
         }
     }
 }

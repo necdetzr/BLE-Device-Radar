@@ -23,4 +23,8 @@ class OfflineUserDataRepository @Inject constructor(
     override suspend fun setThemeConfig(themeConfig: ThemeConfig) {
         blePreferencesDataSource.updateThemeConfig(themeConfig)
     }
+
+    override suspend fun setRssiRange(rssiRange: Int) {
+        blePreferencesDataSource.updateRssiRange(rssiRange)
+    }
 }

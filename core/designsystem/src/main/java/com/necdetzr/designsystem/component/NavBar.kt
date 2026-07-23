@@ -67,7 +67,7 @@ fun BleNavigationBar(
         modifier = modifier,
         content = content,
         contentColor = NavDefaults.navigationContentColor(),
-        containerColor = Color.Transparent,
+        containerColor = MaterialTheme.colorScheme.background,
         tonalElevation = 0.dp
     )
 
