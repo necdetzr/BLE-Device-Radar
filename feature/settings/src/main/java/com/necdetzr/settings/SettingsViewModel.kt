@@ -19,7 +19,6 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
-    private val dataStore: BlePreferencesDataSource
 ) : ViewModel(){
 
     val settingsUiState: StateFlow<SettingsViewState> = userDataRepository.userPreferences
