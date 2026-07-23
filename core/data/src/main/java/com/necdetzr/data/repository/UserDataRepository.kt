@@ -10,4 +10,5 @@ interface UserDataRepository {
     suspend fun setThemeConfig(themeConfig: ThemeConfig)
     suspend fun setSortType(sortType: SortType)
     suspend fun setScanPeriod(scanPeriod: Long)
+    suspend fun setRssiRange(rssiRange: Int)
 }
