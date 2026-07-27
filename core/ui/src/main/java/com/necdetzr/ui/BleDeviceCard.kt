@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,18 +22,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.necdetzr.designsystem.icons.BleIcons
-import com.necdetzr.model.BleDevice
+import com.necdetzr.model.ScannedBleDevice
 
 @Composable
 fun BleDeviceCard(
-    bleDevice: BleDevice,
+    bleDevice: ScannedBleDevice,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
 
-    Card(
+    Surface(
         onClick = onClick,
-        modifier = modifier
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -93,7 +97,7 @@ fun BleDeviceCard(
 
 }
 @Composable
-fun RssiIcon(rssi:Int){
+internal fun RssiIcon(rssi:Int){
     val rssiIcon = when {
         rssi >= -60 -> BleIcons.RssiHigh
         rssi >= -80 -> BleIcons.RssiMedium
@@ -110,10 +114,11 @@ fun RssiIcon(rssi:Int){
 @Composable
 fun BleDeviceCardPreview(){
     BleDeviceCard(
-        bleDevice = BleDevice(
+        bleDevice = ScannedBleDevice(
             name = "Test Device",
             macAddress = "00:00:00:00:00:00",
-            rssi = -35
+            rssi = -35,
+            firstSeenAt = 0
         ),
         onClick = {}
     )

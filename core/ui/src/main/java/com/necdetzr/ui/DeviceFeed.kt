@@ -5,12 +5,11 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.necdetzr.model.BleDevice
-import java.util.UUID
+import com.necdetzr.model.ScannedBleDevice
 
 fun LazyListScope.deviceFeed(
     feedUiState: DeviceFeedUiState,
-    onDeviceClick: (BleDevice) -> Unit
+    onDeviceClick: (ScannedBleDevice) -> Unit
 
 ){
     when(feedUiState){
@@ -23,7 +22,7 @@ fun LazyListScope.deviceFeed(
             ){
                 BleDeviceCard(
                     bleDevice = it,
-                    onClick = {},
+                    onClick = {onDeviceClick(it)},
                     modifier = Modifier.padding(8.dp)
                 )
             }
@@ -48,6 +47,6 @@ fun LazyListScope.deviceFeed(
 
 sealed interface DeviceFeedUiState {
     data object Idle : DeviceFeedUiState
-    data class Scanning (val devices:List<BleDevice>) : DeviceFeedUiState
-    data class Success (val devices:List<BleDevice>) : DeviceFeedUiState
+    data class Scanning (val devices:List<ScannedBleDevice>) : DeviceFeedUiState
+    data class Success (val devices:List<ScannedBleDevice>) : DeviceFeedUiState
 }
