@@ -6,15 +6,18 @@ import androidx.lifecycle.viewModelScope
 import com.necdetzr.common.result.Result
 import com.necdetzr.data.repository.BleRadarRepository
 import com.necdetzr.data.repository.UserDataRepository
-import com.necdetzr.model.BleDevice
+import com.necdetzr.model.ScannedBleDevice
 import com.necdetzr.ui.DeviceFeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
@@ -34,9 +37,31 @@ class RadarViewModel @Inject constructor(
     val radarMessage : StateFlow<RadarUserMessage?> = _radarMessage.asStateFlow()
     private var scanJob: Job? = null
 
-    private val scannedDevices = HashMap<String,BleDevice>()
-    fun onDeviceSelected(){
+    private val _selectedMacAddress = MutableStateFlow<String?>(null)
 
+    val selectedDevice: StateFlow<ScannedBleDevice?> = combine(
+        _feedUiState,
+        _selectedMacAddress
+    ) { state, macAddress ->
+        if (macAddress == null) return@combine null
+
+        when (state) {
+            is DeviceFeedUiState.Scanning -> state.devices.find { it.macAddress == macAddress }
+            is DeviceFeedUiState.Success -> state.devices.find { it.macAddress == macAddress }
+            else -> null
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = null
+    )
+    private val scannedDevices = HashMap<String, ScannedBleDevice>()
+
+    fun onDeviceSelected(device: ScannedBleDevice){
+        _selectedMacAddress.value = device.macAddress
+    }
+    fun onSheetDismissed(){
+        _selectedMacAddress.value = null
     }
 
     override fun onCleared() {
@@ -90,10 +115,10 @@ class RadarViewModel @Inject constructor(
 
 
     }
-    private fun sortedDevices(rssi:Int): List<BleDevice> =
+    private fun sortedDevices(rssi:Int): List<ScannedBleDevice> =
         scannedDevices.values
             .filter { device -> device.rssi >= rssi }
-            .sortedByDescending(BleDevice::rssi)
+            .sortedByDescending(ScannedBleDevice::rssi)
 
     fun onStopButtonClicked(){
         scanJob?.cancel()
