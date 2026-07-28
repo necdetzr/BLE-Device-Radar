@@ -32,10 +32,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -61,7 +64,8 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.necdetzr.designsystem.icons.BleIcons
-import com.necdetzr.model.BleDevice
+import com.necdetzr.model.ScannedBleDevice
+import com.necdetzr.ui.DeviceDetailSheet
 import com.necdetzr.ui.DeviceFeedUiState
 import com.necdetzr.ui.deviceFeed
 
@@ -70,7 +74,6 @@ import com.necdetzr.ui.deviceFeed
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 internal fun RadarScreen(
-    onDeviceClick: (BleDevice) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RadarViewModel = hiltViewModel()
 ) {
@@ -81,6 +84,7 @@ internal fun RadarScreen(
     val snackBarHostState = remember {
         SnackbarHostState()
     }
+    val selectedDevice by viewModel.selectedDevice.collectAsStateWithLifecycle()
     val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     val bluetoothAdapter = bluetoothManager.adapter
 
@@ -143,7 +147,7 @@ internal fun RadarScreen(
     ) { permissionMap ->
         val areAllPermissionsGranted = permissionMap.values.all { it }
         if (areAllPermissionsGranted) {
-            if (bluetoothAdapter?.isEnabled == true) {
+            if (bluetoothAdapter.isEnabled) {
                 viewModel.onStartButtonClicked()
             } else {
                 val enableBtIntent = android.content.Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -156,7 +160,9 @@ internal fun RadarScreen(
 
     RadarScreen(
         uiState = uiState,
-        onDeviceClick = onDeviceClick,
+        onDeviceClick = {device->
+            viewModel.onDeviceSelected(device)
+        },
         snackbarHostState = snackBarHostState,
         onButtonClick = {
             val hasAllPermissions = permissions.all { permission ->
@@ -176,6 +182,12 @@ internal fun RadarScreen(
         onCancelClick = viewModel::onStopButtonClicked,
         modifier = modifier
     )
+    selectedDevice?.let { device ->
+        DeviceDetailSheet(
+            device = device,
+            onDismissRequest = { viewModel.onSheetDismissed() }
+        )
+    }
 }
 
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -183,7 +195,7 @@ internal fun RadarScreen(
 internal fun RadarScreen(
     uiState: DeviceFeedUiState,
     snackbarHostState: SnackbarHostState,
-    onDeviceClick: (BleDevice) -> Unit,
+    onDeviceClick: (ScannedBleDevice) -> Unit,
     onButtonClick:()->Unit,
     onCancelClick:()->Unit,
     modifier:Modifier = Modifier
@@ -264,9 +276,6 @@ internal fun RadarScreen(
             )
         }
     }
-
-
-
 }
 @Composable
 private fun ScanButton(

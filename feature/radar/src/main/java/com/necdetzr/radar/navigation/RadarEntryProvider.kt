@@ -10,8 +10,6 @@ import com.necdetzr.radar.api.RadarNavKey
 @SuppressLint("VisibleForTests")
 fun EntryProviderScope<NavKey>.radarEntry(navigator: Navigator){
     entry<RadarNavKey> {
-        RadarScreen(
-            onDeviceClick = {}
-        )
+        RadarScreen()
     }
 }

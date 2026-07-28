@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="core_ui_signal_strength">Signal Strength</string>
+    <string name="core_ui_estimated_distance">Estimated Distance</string>
+    <string name="core_ui_undetermined">Undetermined</string>
+    <string name="core_ui_last_seen">Last Seen</string>
+    <string name="core_ui_just_now">Just Now</string>
+    <string name="core_ui_tx_power">TX Power</string>
+    <string name="core_ui_connectable">Connectable</string>
+    <string name="core_ui_yes">Yes</string>
+    <string name="core_ui_no">No</string>
+    <string name="core_ui_packets">Packets</string>
+    <string name="core_ui_phy">PHY</string>
+    <string name="core_ui_advertised_services">Advertised Services</string>
+    <string name="core_ui_no_advertised">No Advertised Services</string>
+    <string name="core_ui_services">%1$d services</string>
+    <string name="core_ui_manufacturer_data">Manufacturer Data</string>
+    <string name="core_ui_no_manufacturer">No Manufacturer Data</string>
+    <string name="core_ui_service_data">Service Data</string>
+    <string name="core_ui_no_service_data">No Service Data</string>
+    <string name="core_ui_records">%1$d records</string>
+    <string name="core_ui_raw_advertising_packet">Raw Advertising Packet</string>
+    <string name="core_ui_bytes">%1$d bytes</string>
+    <string name="core_ui_extended_advertising">Extended Advertising</string>
+    <string name="core_ui_sid">SID</string>
+    <string name="core_ui_secondary_phy">Secondary PHY</string>
+    <string name="core_ui_periodic_interval">Periodic Interval</string>
+    <string name="core_ui_unknown_device">Unknown Device</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</resources>

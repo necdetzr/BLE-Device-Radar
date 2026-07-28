@@ -7,20 +7,18 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import com.necdetzr.ble.domain.BleScanner
+import com.necdetzr.ble.mapper.toScannedBleDevice
 import com.necdetzr.common.network.BleDispatchers
 import com.necdetzr.common.network.Dispatcher
 import com.necdetzr.common.result.Result
-import com.necdetzr.model.BleDevice
+import com.necdetzr.model.ScannedBleDevice
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-
-const val SCAN_PERIOD = 15000L
 
 class BleScannerImpl @Inject constructor(
     private val bluetoothAdapter: BluetoothAdapter,
@@ -31,7 +29,7 @@ class BleScannerImpl @Inject constructor(
         get() = bluetoothAdapter.bluetoothLeScanner
 
     @SuppressLint("MissingPermission")
-    override fun startScanning(): Flow<Result<BleDevice>> = callbackFlow{
+    override fun startScanning(): Flow<Result<ScannedBleDevice>> = callbackFlow{
         val scanner = bluetoothLeScanner
         if (scanner == null){
             close(Exception("Bluetooth hardware not available"))
@@ -42,22 +40,10 @@ class BleScannerImpl @Inject constructor(
             .build()
         val callback = object : ScanCallback() {
             override fun onScanResult(callbackType:Int,result: ScanResult?){
-                result?.let {
-                    val deviceName = try {
-                        when {
-                            !it.device.name.isNullOrBlank() -> it.device.name
-                            !it.scanRecord?.deviceName.isNullOrBlank() -> it.scanRecord?.deviceName
-                            else -> "Unknown Device"
-                        }
-                    } catch (e: SecurityException) {
-                        "Unknown Device"
-                    }
-                    val device = BleDevice(
-                        name = deviceName,
-                        macAddress = it.device.address,
-                        rssi = it.rssi
-                    )
+                result?.let {scanResult->
+                    val device = scanResult.toScannedBleDevice()
                     trySend(Result.Success(device))
+
                 }
             }
             override fun onScanFailed(errorCode:Int){
