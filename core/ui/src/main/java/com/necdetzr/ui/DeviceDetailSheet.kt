@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.necdetzr.designsystem.icons.BleIcons
@@ -135,7 +136,7 @@ private fun DeviceDetailSheetContent(
 
         RssiCard(
             rssi = bleDevice.rssi,
-            lastSeen = "Just now"
+            lastSeen = stringResource(R.string.core_ui_just_now)
         )
 
         DeviceInfoGrid(
@@ -154,15 +155,15 @@ private fun DetailedInfoSection(
 ){
     DeviceOtherInfoCard {
         DeviceOtherInfoRow(
-            title = "Advertised Services",
-            value = "${bleDevice.advertisement.serviceUuids.size} services",
+            title = stringResource(R.string.core_ui_advertised_services),
+            value = stringResource(R.string.core_ui_services,bleDevice.advertisement.serviceUuids.size),
             icon = BleIcons.Services,
 
             ) {
 
             if (bleDevice.advertisement.serviceUuids.isEmpty()) {
                 Text(
-                    text = "No advertised services",
+                    text = stringResource(R.string.core_ui_no_advertised),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -185,14 +186,14 @@ private fun DetailedInfoSection(
         }
 
         DeviceOtherInfoRow(
-            title = "Manufacturer Data",
+            title = stringResource(R.string.core_ui_manufacturer_data),
             value = bleDevice.advertisement.manufacturerData.size.toString(),
             icon = BleIcons.Manufacturer,
 
             ) {
             if (bleDevice.advertisement.manufacturerData.isEmpty()) {
                 Text(
-                    text = "No manufacturer data",
+                    text = stringResource(R.string.core_ui_no_manufacturer),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -215,13 +216,13 @@ private fun DetailedInfoSection(
             }
         }
         DeviceOtherInfoRow (
-            title = "Service Data",
-            value = "${bleDevice.advertisement.serviceData.size} records",
+            title = stringResource(R.string.core_ui_service_data),
+            value = stringResource(R.string.core_ui_records,bleDevice.advertisement.serviceData.size),
             icon = BleIcons.Sensors,
         ) {
             if (bleDevice.advertisement.serviceData.isEmpty()) {
                 Text(
-                    text = "No service data",
+                    text = stringResource(R.string.core_ui_no_service_data),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -229,9 +230,7 @@ private fun DetailedInfoSection(
                 bleDevice.advertisement.serviceData.forEach { service ->
                     Column(modifier = Modifier.padding(vertical = 4.dp)) {
                         SelectionContainer {
-                            Column(
-
-                            ) {
+                            Column{
                                 Text(
                                     text = BleUuidMapper.getReadableName(service.serviceUuid),
                                     style = MaterialTheme.typography.bodyLarge,
@@ -252,8 +251,8 @@ private fun DetailedInfoSection(
             }
         }
         DeviceOtherInfoRow(
-            title = "Raw Advertising Packet",
-            value = "${bleDevice.advertisement.rawData.size} bytes",
+            title = stringResource(R.string.core_ui_raw_advertising_packet),
+            value = stringResource(R.string.core_ui_bytes,bleDevice.advertisement.rawData.size),
             icon = BleIcons.Code,
         ) {
             SelectionContainer {
@@ -266,23 +265,23 @@ private fun DetailedInfoSection(
 
         }
         DeviceOtherInfoRow(
-            title = "Extended Advertising",
+            title = stringResource(R.string.core_ui_extended_advertising),
             value = "BT 5.0+",
             icon = BleIcons.Info,
             showDivider = false
         ) {
             Text(
-                text = "SID: ${bleDevice.advertisement.advertisingSid ?: "N/A"}",
+                text = stringResource(R.string.core_ui_sid,bleDevice.advertisement.advertisingSid ?: "N/A"),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "Secondary PHY: ${bleDevice.advertisement.secondaryPhy.name}",
+                text = stringResource(R.string.core_ui_secondary_phy,bleDevice.advertisement.secondaryPhy.name),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "Periodic Interval: ${bleDevice.advertisement.periodicAdvertisingInterval ?: "N/A"}",
+                text = stringResource(R.string.core_ui_periodic_interval,bleDevice.advertisement.periodicAdvertisingInterval ?: "N/A"),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -300,7 +299,7 @@ private fun SheetTitle(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = device.name ?: "Unknown Device",
+            text = device.name ?: stringResource(R.string.core_ui_unknown_device),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -350,14 +349,14 @@ private fun DeviceInfoGrid(device: ScannedBleDevice) {
         ) {
             InfoCard(
                 modifier = Modifier.weight(1f),
-                title = "TX Power",
+                title = stringResource(R.string.core_ui_tx_power),
                 value = "${device.advertisement.txPower ?: "N/A"} dBm",
                 icon = BleIcons.Energy
             )
             InfoCard(
                 modifier = Modifier.weight(1f),
-                title = "Connectable",
-                value = if (device.advertisement.isConnectable == true) "Yes" else "No",
+                title = stringResource(R.string.core_ui_connectable),
+                value = if (device.advertisement.isConnectable == true) stringResource(R.string.core_ui_yes) else stringResource(R.string.core_ui_no),
                 icon = BleIcons.Connect
             )
         }
@@ -368,13 +367,13 @@ private fun DeviceInfoGrid(device: ScannedBleDevice) {
         ) {
             InfoCard(
                 modifier = Modifier.weight(1f),
-                title = "Packets",
+                title = stringResource(R.string.core_ui_packets),
                 value = device.packetCount.toString(),
                 icon = BleIcons.Packet
             )
             InfoCard(
                 modifier = Modifier.weight(1f),
-                title = "PHY",
+                title =stringResource(R.string.core_ui_phy),
                 value = device.advertisement.primaryPhy.name,
                 icon = BleIcons.System
             )
@@ -534,7 +533,7 @@ private fun RssiCard(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Text(
-                text = "Signal Strength",
+                text = stringResource(R.string.core_ui_signal_strength),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
@@ -582,12 +581,12 @@ private fun RssiCard(
                     )
                     Column {
                         Text(
-                            text = "Estimated Distance",
+                            text = stringResource(R.string.core_ui_estimated_distance),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "~Undefined",
+                            text = stringResource(R.string.core_ui_undetermined),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -606,7 +605,7 @@ private fun RssiCard(
                     )
                     Column {
                         Text(
-                            text = "Last Seen",
+                            text = stringResource(R.string.core_ui_last_seen),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
