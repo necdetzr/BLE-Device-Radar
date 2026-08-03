@@ -1,14 +1,8 @@
 package com.necdetzr.radar
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
@@ -17,6 +11,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,24 +24,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -55,12 +55,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.necdetzr.designsystem.icons.BleIcons
@@ -77,54 +76,20 @@ internal fun RadarScreen(
     modifier: Modifier = Modifier,
     viewModel: RadarViewModel = hiltViewModel()
 ) {
+    val stateHolder = rememberRadarStateHolder()
 
-    val uiState by viewModel.feedUiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val userMessage by viewModel.radarMessage.collectAsStateWithLifecycle()
-    val snackBarHostState = remember {
-        SnackbarHostState()
-    }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedDevice by viewModel.selectedDevice.collectAsStateWithLifecycle()
-    val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothAdapter = bluetoothManager.adapter
-
-    val permissions = remember {
-        arrayOf(
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT
-        )
-    }
-    LaunchedEffect(userMessage) {
-        val currentMessage = userMessage ?: return@LaunchedEffect
-        snackBarHostState.showSnackbar(
-            message = context.getString(
-                currentMessage.stringResource
-            ),
+    BleHardwareEffect(
+        stateHolder = stateHolder,
+        onBluetoothTurnedOff = viewModel::onStopButtonClicked
+    )
+    LaunchedEffect(uiState.radarMessage) {
+        val currentMessage = uiState.radarMessage ?: return@LaunchedEffect
+        stateHolder.snackbarHostState.showSnackbar(
+                message = stateHolder.context.getString(currentMessage.stringResource)
         )
         viewModel.onUserMessageShown()
-    }
-    DisposableEffect(context) {
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if(intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED){
-                    val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
-                    if(state == BluetoothAdapter.STATE_OFF || state == BluetoothAdapter.STATE_TURNING_OFF){
-                        viewModel.onStopButtonClicked()
-                    }
-                }
-            }
-        }
-        val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-        ContextCompat.registerReceiver(
-            context,
-            receiver,
-            filter,
-            ContextCompat.RECEIVER_NOT_EXPORTED
-        )
-        onDispose {
-            context.unregisterReceiver(receiver)
-        }
-
     }
     val enableBluetoothLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -135,22 +100,23 @@ internal fun RadarScreen(
             viewModel.onBluetoothEnableDenied()
         }
     }
-    LaunchedEffect(bluetoothAdapter) {
-        if (bluetoothAdapter == null) {
+    LaunchedEffect(stateHolder.bluetoothAdapter) {
+        if (stateHolder.bluetoothAdapter == null) {
             viewModel.onBluetoothNotSupported()
         }
     }
 
-    if (bluetoothAdapter == null) return
+    if (stateHolder.bluetoothAdapter == null) return
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissionMap ->
         val areAllPermissionsGranted = permissionMap.values.all { it }
         if (areAllPermissionsGranted) {
-            if (bluetoothAdapter.isEnabled) {
+            if (stateHolder.bluetoothAdapter.isEnabled) {
                 viewModel.onStartButtonClicked()
             } else {
-                val enableBtIntent = android.content.Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 enableBluetoothLauncher.launch(enableBtIntent)
             }
         }else{
@@ -163,23 +129,21 @@ internal fun RadarScreen(
         onDeviceClick = {device->
             viewModel.onDeviceSelected(device)
         },
-        snackbarHostState = snackBarHostState,
+        snackbarHostState = stateHolder.snackbarHostState,
         onButtonClick = {
-            val hasAllPermissions = permissions.all { permission ->
-                ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-            }
-            if (hasAllPermissions) {
-                if (bluetoothAdapter.isEnabled) {
-                    viewModel.onStartButtonClicked()
-                } else {
-                    val enableBtIntent = android.content.Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                    enableBluetoothLauncher.launch(enableBtIntent)
-                }
-            } else {
-                permissionLauncher.launch(permissions)
-            }
+           if(stateHolder.hasAllPermissions()){
+               if(stateHolder.bluetoothAdapter.isEnabled){
+                   viewModel.onStartButtonClicked()
+               }else{
+                   enableBluetoothLauncher.launch(stateHolder.createEnableBtIntent())
+               }
+           }else{
+               permissionLauncher.launch(stateHolder.permissions)
+           }
+
         },
         onCancelClick = viewModel::onStopButtonClicked,
+        onSaveButton = viewModel::onSaveClick,
         modifier = modifier
     )
     selectedDevice?.let { device ->
@@ -188,16 +152,25 @@ internal fun RadarScreen(
             onDismissRequest = { viewModel.onSheetDismissed() }
         )
     }
+    if(uiState.showAlertDialog){
+        SaveAlertDialog(
+            onDismissRequest = viewModel::onSaveDialogDismissed,
+            onSave = { scanName->
+                viewModel.onSaveRecordClick(scanName)
+            }
+        )
+    }
 }
 
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
 internal fun RadarScreen(
-    uiState: DeviceFeedUiState,
+    uiState: RadarScreenState,
     snackbarHostState: SnackbarHostState,
     onDeviceClick: (ScannedBleDevice) -> Unit,
     onButtonClick:()->Unit,
     onCancelClick:()->Unit,
+    onSaveButton:()->Unit,
     modifier:Modifier = Modifier
 ){
 
@@ -221,18 +194,18 @@ internal fun RadarScreen(
 
         ) {
             RadarAnimation(
-                isScanning = uiState is DeviceFeedUiState.Scanning
+                isScanning = uiState.feedState is DeviceFeedUiState.Scanning
             )
 
-            when (uiState) {
+            when (val feedState = uiState.feedState) {
                 is DeviceFeedUiState.Idle -> {
                     ScanReadyTitle()
                 }
                 is DeviceFeedUiState.Scanning -> {
-                    ScanningTitle(devicesFounded = uiState.devices.size)
+                    ScanningTitle(devicesFounded = feedState.devices.size)
                 }
                 is DeviceFeedUiState.Success -> {
-                    ScanCompletedTitle(devicesFounded = uiState.devices.size)
+                    ScanCompletedTitle(devicesFounded = feedState.devices.size)
                 }
             }
 
@@ -240,7 +213,7 @@ internal fun RadarScreen(
             Box(modifier = Modifier.weight(1f)) {
 
 
-                when (uiState) {
+                when (val feedState = uiState.feedState) {
                     is DeviceFeedUiState.Idle -> Box(
                         modifier = Modifier
                     ) {
@@ -249,39 +222,163 @@ internal fun RadarScreen(
 
                     is DeviceFeedUiState.Scanning -> LazyColumn {
                         deviceFeed(
-                            feedUiState = uiState,
+                            feedUiState = feedState,
                             onDeviceClick = onDeviceClick
                         )
                     }
 
                     is DeviceFeedUiState.Success -> LazyColumn {
                         deviceFeed(
-                            feedUiState = uiState,
+                            feedUiState = feedState,
                             onDeviceClick = onDeviceClick
                         )
                     }
                 }
             }
-            ScanButton(
-                onClick ={
-                    if(uiState is DeviceFeedUiState.Scanning){
-                        onCancelClick()
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp)
+            ) {
+                if (uiState.feedState is DeviceFeedUiState.Success) {
+                    SaveScanButton(
+                        onClick = { onSaveButton() },
+                        modifier = Modifier.height(56.dp),
+                        enabled = uiState.saveButtonEnabled
+                    )
+                }
 
-                    }else{
-                        onButtonClick()
-                    }
-                },
-                modifier = Modifier.padding(vertical = 12.dp).height(56.dp),
-                isScanning = uiState is DeviceFeedUiState.Scanning
-            )
+                ScanButton(
+                    onClick = {
+                        if (uiState.feedState is DeviceFeedUiState.Scanning) {
+                            onCancelClick()
+                        } else {
+                            onButtonClick()
+                        }
+                    },
+                    modifier = Modifier.height(56.dp),
+                    isScanning = uiState.feedState is DeviceFeedUiState.Scanning
+                )
+            }
+
         }
     }
 }
 @Composable
-private fun ScanButton(
-    onClick:()-> Unit,
-    isScanning:Boolean,
+private fun SaveScanButton(
+    onClick: () -> Unit,
+    enabled:Boolean,
     modifier: Modifier = Modifier
+) {
+    val text = if(enabled) stringResource(R.string.feature_radar_save_scan) else "Saved!"
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+
+            ),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = BleIcons.Save,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                text = text,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SaveAlertDialog(
+    onDismissRequest:()->Unit,
+    onSave: (String) -> Unit
+){
+    var name by remember { mutableStateOf("") }
+    BasicAlertDialog(
+        onDismissRequest = {onDismissRequest()},
+        modifier = Modifier.fillMaxWidth(),
+        properties = DialogProperties(),
+        content = {
+            Surface(
+                tonalElevation = 1.dp,
+                shape = MaterialTheme.shapes.extraLarge,
+                modifier = Modifier.wrapContentHeight(),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text= "Save Scan",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Give this scan a name so you can find it later.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = {name = it},
+                        maxLines = 1,
+                        singleLine = true,
+                        label = {Text("Name")},
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    Text(
+                        text = "e.g. Office Building A",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = {onDismissRequest()},
+
+                        ) {
+                            Text("Cancel")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {onSave(name)},
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.surface
+                            )
+                        ) {
+                            Text("Save")
+                        }
+
+                    }
+                }
+            }
+
+
+        })
+}
+@Composable
+private fun ScanButton(
+    modifier: Modifier = Modifier,
+    onClick:()-> Unit,
+    isScanning:Boolean = false,
 ){
     Button(
         onClick = onClick,
