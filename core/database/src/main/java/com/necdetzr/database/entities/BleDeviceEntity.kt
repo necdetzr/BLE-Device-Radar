@@ -1,6 +1,5 @@
-package com.necdetzr.database
+package com.necdetzr.database.entities
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index

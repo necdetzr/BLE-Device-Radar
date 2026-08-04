@@ -5,6 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.necdetzr.database.entities.BleDeviceEntity
+import com.necdetzr.database.entities.ScanRecordEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -16,7 +18,7 @@ interface ScanHistoryDao {
     suspend fun insertScanRecord(scanRecord: ScanRecordEntity) : Long
 
     @Transaction
-    suspend fun saveAllScan(scanRecord: ScanRecordEntity,devices:List<BleDeviceEntity>){
+    suspend fun saveAllScan(scanRecord: ScanRecordEntity, devices:List<BleDeviceEntity>){
         val newScanId = insertScanRecord(scanRecord)
         val devicesWithScanId = devices.map { it.copy(ownerScanId = newScanId) }
         insertBleDevices(devicesWithScanId)
