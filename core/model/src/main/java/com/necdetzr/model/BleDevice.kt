@@ -1,6 +1,8 @@
 package com.necdetzr.model
 
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ScannedBleDevice(
     val macAddress: String,
     val name: String?,
@@ -10,6 +12,7 @@ data class ScannedBleDevice(
     val lastSeenAt: Long = firstSeenAt,
     val packetCount: Int = 1
 )
+@Serializable
 data class BleAdvertisement(
     val txPower: Int? = null,
     val isConnectable: Boolean? = null,
@@ -60,7 +63,7 @@ data class BleAdvertisement(
         return result
     }
 }
-
+@Serializable
 data class BleManufacturerData(
     val companyId: Int,
     val payload: ByteArray
@@ -83,7 +86,7 @@ data class BleManufacturerData(
         return result
     }
 }
-
+@Serializable
 data class BleServiceData(
     val serviceUuid: String,
     val payload: ByteArray
@@ -106,7 +109,7 @@ data class BleServiceData(
         return result
     }
 }
-
+@Serializable
 enum class BlePhy {
     LE_1M,
     LE_2M,
