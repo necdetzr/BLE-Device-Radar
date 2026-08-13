@@ -58,7 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.necdetzr.designsystem.icons.BleIcons
 import com.necdetzr.model.ScannedBleDevice
-import com.necdetzr.ui.mapper.BleUuidMapper
+import com.necdetzr.ui.mapper.BleAssignedNumbersMapper
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -82,7 +82,7 @@ fun DeviceDetailSheet(
 }
 
 @Composable
-private fun DeviceDetailSheetContent(
+fun DeviceDetailSheetContent(
     bleDevice: ScannedBleDevice
 ) {
     val clipBoardManager = LocalClipboard.current
@@ -170,7 +170,7 @@ private fun DetailedInfoSection(
             } else {
                 bleDevice.advertisement.serviceUuids.forEach { uuid ->
                     Text(
-                        text = BleUuidMapper.getReadableName(uuid),
+                        text = BleAssignedNumbersMapper.getReadableName(uuid),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -201,7 +201,7 @@ private fun DetailedInfoSection(
                 bleDevice.advertisement.manufacturerData.forEach { data ->
                     Column(modifier = Modifier.padding(vertical = 4.dp)) {
                         Text(
-                            text = BleUuidMapper.getCompanyName(data.companyId),
+                            text = BleAssignedNumbersMapper.getCompanyName(data.companyId),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -232,7 +232,7 @@ private fun DetailedInfoSection(
                         SelectionContainer {
                             Column{
                                 Text(
-                                    text = BleUuidMapper.getReadableName(service.serviceUuid),
+                                    text = BleAssignedNumbersMapper.getReadableName(service.serviceUuid),
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface
