@@ -9,6 +9,8 @@ import com.necdetzr.navigation.Navigator
 
 fun EntryProviderScope<NavKey>.historyEntry(navigator: Navigator){
     entry<HistoryNavKey>{
-        HistoryScreen()
+        HistoryScreen(
+            onSearchClick = {}
+        )
     }
 }
