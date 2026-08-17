@@ -16,7 +16,7 @@ androidxLifecycleViewModelNavigation3 = "2.10.0"
 androidxComposeMaterial3Adaptive = "1.1.0-rc01"
 androidxComposeMaterial3AdaptiveNavigation3 = "1.3.0-alpha04"
 androidxCoreSplashscreen = "1.0.1"
-
+kotlinxSerialization = "1.6.3"
 room = "2.8.3"
 ksp = "2.3.4"
 hilt = "2.59"
@@ -58,7 +58,7 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 hilt-core = { group = "com.google.dagger", name = "hilt-core", version.ref = "hilt" }
-
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
