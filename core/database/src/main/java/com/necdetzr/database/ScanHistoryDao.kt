@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.necdetzr.database.entities.BleDeviceEntity
 import com.necdetzr.database.entities.ScanRecordEntity
+import com.necdetzr.database.relations.DeviceScanRow
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -27,11 +28,47 @@ interface ScanHistoryDao {
     @Query("SELECT * FROM scan_records ORDER BY timeStamp DESC")
     fun getAllScans(): Flow<List<ScanRecordEntity>>
 
+    @Query("SELECT * FROM scan_records ORDER BY timestamp DESC LIMIT 5")
+    fun getRecentScans(): Flow<List<ScanRecordEntity>>
+
     @Transaction
     @Query("SELECT * FROM scan_records WHERE scanId = :scanId LIMIT 1")
     fun getScanWithDevices(scanId:Long): Flow<ScanRecordWithDevices?>
 
     @Query("DELETE FROM scan_records WHERE scanId = :scanId")
     suspend fun deleteScan(scanId: Long)
+
+    @Query("SELECT COUNT(*) FROM scan_records")
+    fun getTotalScanCount(): Flow<Int>
+
+    @Query(
+        """
+            SELECT * FROM scan_records
+            WHERE scanName LIKE '%' || :query || '%'
+            ORDER BY timeStamp DESC
+        """
+    )
+    fun searchScans(query:String) : Flow<List<ScanRecordEntity>>
+    @Query(
+        """
+        SELECT 
+            scanned_devices.*,
+            scan_records.*
+        FROM scanned_devices
+        INNER JOIN scan_records
+            ON scan_records.scanId = scanned_devices.ownerScanId
+        WHERE
+            scanned_devices.deviceName LIKE '%' || :query || '%' COLLATE NOCASE
+            OR scanned_devices.macAddress LIKE '%' || :query || '%' COLLATE NOCASE
+        ORDER BY
+            scan_records.timeStamp DESC,
+            scanned_devices.lastSeenAt DESC
+        LIMIT :limit
+    """
+    )
+    fun searchDevicesWithScans(
+        query: String,
+        limit:Int
+    ): Flow<List<DeviceScanRow>>
 
 }
