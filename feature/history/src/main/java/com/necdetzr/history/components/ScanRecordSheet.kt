@@ -19,16 +19,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.necdetzr.designsystem.icons.BleIcons
+import com.necdetzr.history.R
 import com.necdetzr.model.ScanRecord
 import com.necdetzr.model.ScanRecordDetail
 import com.necdetzr.model.ScannedBleDevice
 import com.necdetzr.ui.BleDeviceCard
-import com.necdetzr.ui.DeviceDetailSheet
 import com.necdetzr.ui.DeviceDetailSheetContent
-import com.necdetzr.ui.DeviceFeedUiState
-import com.necdetzr.ui.deviceFeed
 import com.necdetzr.ui.util.toReadableDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,14 +80,18 @@ fun ScanRecordSheetContent(
             Column{
                 Text(
                     text = scan.scanName,
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.height(4.dp))
 
                 Text(
                     text = scan.timestamp.toReadableDateTime(),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
@@ -100,19 +104,19 @@ fun ScanRecordSheetContent(
             ) {
                 ScanRecordDataCard(
                     modifier = Modifier.weight(1f),
-                    title = "Devices",
+                    title = stringResource(R.string.feature_history_devices),
                     value = scan.deviceCount.toString()
                 )
 
                 ScanRecordDataCard(
                     modifier = Modifier.weight(1f),
-                    title = "Packets",
+                    title = stringResource(R.string.feature_history_packets),
                     value = devices.sumOf { it.packetCount }.toString()
                 )
 
                 ScanRecordDataCard(
                     modifier = Modifier.weight(1f),
-                    title = "Connectable",
+                    title = stringResource(R.string.feature_history_connectable),
                     value = devices.count {
                         it.advertisement.isConnectable == true
                     }.toString()
@@ -122,7 +126,7 @@ fun ScanRecordSheetContent(
 
         item {
             Text(
-                text = "Devices",
+                text = stringResource(R.string.feature_history_devices),
                 style = MaterialTheme.typography.titleMedium
             )
         }
@@ -157,13 +161,17 @@ fun ScanRecordDataCard(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.labelMedium
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.height(4.dp))
 
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
