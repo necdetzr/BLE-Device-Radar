@@ -51,24 +51,26 @@ interface ScanHistoryDao {
     fun searchScans(query:String) : Flow<List<ScanRecordEntity>>
     @Query(
         """
-        SELECT 
-            scanned_devices.*,
-            scan_records.*
+    SELECT d.*, s.*
+    FROM scanned_devices d
+    JOIN scan_records s ON s.scanId = d.ownerScanId
+    WHERE d.macAddress IN (
+        SELECT macAddress
         FROM scanned_devices
-        INNER JOIN scan_records
-            ON scan_records.scanId = scanned_devices.ownerScanId
-        WHERE
-            scanned_devices.deviceName LIKE '%' || :query || '%' COLLATE NOCASE
-            OR scanned_devices.macAddress LIKE '%' || :query || '%' COLLATE NOCASE
+        WHERE deviceName LIKE '%' || :query || '%'
+           OR macAddress LIKE '%' || :query || '%'
+        GROUP BY macAddress
         ORDER BY
-            scan_records.timeStamp DESC,
-            scanned_devices.lastSeenAt DESC
+            COUNT(DISTINCT ownerScanId) DESC,
+            MAX(lastSeenAt) DESC
         LIMIT :limit
+    )
+    ORDER BY s.timeStamp DESC
     """
     )
     fun searchDevicesWithScans(
         query: String,
-        limit:Int
+        limit: Int,
     ): Flow<List<DeviceScanRow>>
 
 }

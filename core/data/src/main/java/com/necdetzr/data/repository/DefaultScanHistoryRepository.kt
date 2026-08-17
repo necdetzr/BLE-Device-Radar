@@ -58,11 +58,15 @@ class DefaultScanHistoryRepository @Inject constructor(
                                 },
                         )
                     }
-                    .sortedByDescending { result ->
-                        result.scans.maxOfOrNull { scan ->
-                            scan.timestamp
-                        } ?: 0L
-                    }
+                    .sortedWith(
+                        compareByDescending<DeviceSearchResult> {
+                            it.scans.size
+                        }.thenByDescending {
+                            it.scans.maxOfOrNull { scan ->
+                                scan.timestamp
+                            } ?: 0L
+                        }
+                    )
             }
     }
 
