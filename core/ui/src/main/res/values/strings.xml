@@ -22,9 +22,9 @@
     <string name="core_ui_raw_advertising_packet">Raw Advertising Packet</string>
     <string name="core_ui_bytes">%1$d bytes</string>
     <string name="core_ui_extended_advertising">Extended Advertising</string>
-    <string name="core_ui_sid">SID</string>
-    <string name="core_ui_secondary_phy">Secondary PHY</string>
-    <string name="core_ui_periodic_interval">Periodic Interval</string>
+    <string name="core_ui_sid">SID: %1$s</string>
+    <string name="core_ui_secondary_phy">Secondary PHY: %1$s</string>
+    <string name="core_ui_periodic_interval">Periodic Interval: %1$s</string>
     <string name="core_ui_unknown_device">Unknown Device</string>
 
 
