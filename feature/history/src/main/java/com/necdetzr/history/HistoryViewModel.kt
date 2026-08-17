@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.necdetzr.data.repository.ScanHistoryRepository
 import com.necdetzr.model.ScannedBleDevice
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -36,22 +38,29 @@ class HistoryViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = 0
         )
+    private var scanLoadJob: Job? = null
 
     fun onScanClick(scanId: Long) {
-        viewModelScope.launch {
-            historyRepository.getScanWithDevices(scanId)
-                .collect { scan ->
-                    _uiState.update {
-                        it.copy(selectedScan = scan)
-                    }
-                }
+        scanLoadJob?.cancel()
+
+        scanLoadJob = viewModelScope.launch {
+            val scan = historyRepository
+                .getScanWithDevices(scanId)
+                .first()
+
+            _uiState.update {
+                it.copy(
+                    selectedScan = scan,
+                    selectedDevice = null,
+                )
+            }
         }
+
     }
     fun onDeviceClick(device: ScannedBleDevice){
-        viewModelScope.launch {
-            _uiState.update { it.copy(selectedDevice = device) }
+        _uiState.update { it.copy(selectedDevice = device) }
 
-        }
+
     }
     fun onDeviceDetailBack() {
         _uiState.update {
@@ -59,8 +68,9 @@ class HistoryViewModel @Inject constructor(
         }
     }
     fun onSheetDismissed(){
-        viewModelScope.launch {
-            _uiState.update { it.copy(selectedScan = null,selectedDevice = null) }
-        }
+        scanLoadJob?.cancel()
+        scanLoadJob = null
+        _uiState.update { it.copy(selectedScan = null,selectedDevice = null) }
+
     }
 }
