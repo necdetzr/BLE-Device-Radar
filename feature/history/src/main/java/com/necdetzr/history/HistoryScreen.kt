@@ -21,27 +21,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.necdetzr.designsystem.icons.BleIcons
+import com.necdetzr.history.components.HistorySearchPlaceholder
+import com.necdetzr.history.components.ScanRecordCard
 import com.necdetzr.history.components.ScanRecordSheet
 import com.necdetzr.model.ScanRecord
 import com.necdetzr.ui.util.toReadableDateTime
@@ -82,6 +79,21 @@ internal fun HistoryScreen(
     onScanClick: (Long) -> Unit,
     recentScans: List<ScanRecord>
 ){
+    val lastScan = recentScans.firstOrNull()
+
+    val lastSeenValue =
+        lastScan?.timestamp?.toReadableDateTime()
+            ?: stringResource(R.string.feature_history_no_value)
+
+    val lastSeenDescription = if (lastScan != null) {
+        pluralStringResource(
+            id = R.plurals.feature_history_device_count,
+            count = lastScan.deviceCount,
+            lastScan.deviceCount,
+        )
+    } else {
+        stringResource(R.string.feature_history_no_scans_saved)
+    }
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         modifier = modifier
@@ -95,30 +107,35 @@ internal fun HistoryScreen(
         ) {
             HistoryTitle()
             Spacer(Modifier.height(12.dp))
-            SearchBar(
+            HistorySearchPlaceholder (
                 onClick = onSearchClick
             )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 StatisticsCard(
                     modifier = Modifier.weight(1f),
                     icon = BleIcons.Statistic,
-                    title = "Total Scans",
+                    title = stringResource(
+                        R.string.feature_history_total_scans
+                    ),
                     value = totalScans.toString(),
-                    desc = "All Time"
+                    desc = stringResource(
+                        R.string.feature_history_saved_all_time
+                    ),
                 )
-                val lastScan = recentScans.firstOrNull()
 
                 StatisticsCard(
                     modifier = Modifier.weight(1f),
                     icon = BleIcons.Time,
-                    title = "Last Seen",
-                    value = lastScan?.timestamp?.toReadableDateTime() ?: "-",
-                    desc = lastScan?.deviceCount?.toString() + " devices"
+                    title = stringResource(
+                        R.string.feature_history_last_seen_title
+                    ),
+                    value = lastSeenValue,
+                    desc = lastSeenDescription,
                 )
             }
             RecentSection(
@@ -136,13 +153,13 @@ private fun HistoryTitle(){
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "History",
+            text = stringResource(R.string.feature_history_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(Modifier.height(2.dp))
         Text(
-            text = "Search your saved scans.",
+            text = stringResource(R.string.feature_history_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -179,21 +196,28 @@ private fun StatisticsCard(
                 Text(
                     text = title.uppercase(),
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+
                 )
             }
             Spacer(Modifier.height(4.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.height(4.dp))
 
             Text(
                 text = desc,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
 
@@ -240,86 +264,7 @@ private fun RecentSection(
         }
     }
 }
-@Composable
-private fun ScanRecordCard(
-    scanRecord: ScanRecord,
-    icon: ImageVector,
-    isLast:Boolean,
-    onScanClick: (Long) -> Unit
 
-){
-    Column {
-        Row(
-            modifier = Modifier
-                .clickable(
-                    onClick = { onScanClick(scanRecord.scanId) }
-                )
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(6.dp),
-                contentAlignment = Alignment.Center
-            ){
-                Icon(
-                    icon,
-                    null
-                )
-            }
-            Spacer(Modifier.width(8.dp))
-            Column {
-                Text(
-                    text = scanRecord.scanName,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = scanRecord.timestamp.toReadableDateTime(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Spacer(Modifier.weight(1f))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(0.4f))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-            ){
-                Text(
-                    text = "${scanRecord.deviceCount} devices",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-            Spacer(Modifier.width(8.dp))
-            Icon(
-                imageVector = BleIcons.Right,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-        }
-        if(!isLast){
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 4.dp),
-                thickness = 0.4.dp
-
-            )
-        }
-    }
-
-
-
-}
 @Composable
 private fun RecentTitle(){
     Row(
@@ -330,44 +275,10 @@ private fun RecentTitle(){
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Recent Activity",
+            text = stringResource(R.string.feature_history_recent_activity),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
-@Composable
-private fun SearchBar(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-    ) {
-        Row(
-            modifier = Modifier.padding(
-                horizontal = 16.dp,
-                vertical = 14.dp
-            ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = BleIcons.Search,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
 
-            Spacer(Modifier.width(12.dp))
-
-            Text(
-                text = "Search scans or devices...",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
