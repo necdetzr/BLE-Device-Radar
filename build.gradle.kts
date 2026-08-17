@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.room) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
     id("bledeviceradar.root")
     id("dev.detekt") version "2.0.0-alpha.3"
     alias(libs.plugins.android.library) apply false

@@ -172,6 +172,9 @@ fun BleNavigationSuiteScaffold(
         containerColor = Color.Transparent,
         navigationSuiteColors = NavigationSuiteDefaults.colors(
             navigationBarContentColor = NavDefaults.navigationContentColor(),
+            navigationBarContainerColor = MaterialTheme.colorScheme.background,
+            navigationRailContainerColor = MaterialTheme.colorScheme.background,
+
             navigationRailContentColor = Color.Transparent
         ),
         modifier = modifier

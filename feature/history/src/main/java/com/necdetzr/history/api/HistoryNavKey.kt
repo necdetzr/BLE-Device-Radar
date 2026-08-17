@@ -5,3 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 object HistoryNavKey : NavKey
+
+@Serializable
+object HistorySearchNavKey: NavKey

@@ -1,10 +1,14 @@
 package com.necdetzr.designsystem.icons
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.BluetoothSearching
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
@@ -20,6 +24,8 @@ import androidx.compose.material.icons.filled.MiscellaneousServices
 import androidx.compose.material.icons.filled.PlayCircleFilled
 import androidx.compose.material.icons.filled.PowerInput
 import androidx.compose.material.icons.filled.Radar
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.SettingsSuggest
 import androidx.compose.material.icons.filled.SignalCellularAlt
@@ -63,4 +69,10 @@ object BleIcons {
     val Services = Icons.Default.MiscellaneousServices
     val Manufacturer = Icons.Default.Factory
     val Sensors = Icons.Default.Sensors
+    val Search = Icons.Default.Search
+    val Statistic = Icons.Default.BarChart
+    val Right = Icons.Default.ChevronRight
+    val Save = Icons.Default.Save
+    val Back = Icons.AutoMirrored.Filled.ArrowBack
+    val Scan = Icons.Default.Sensors
 }

@@ -15,5 +15,11 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(project(":core:navigation"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:data"))
+    implementation(project(":core:model"))
+    implementation(project(":core:ui"))
+
+
+
     implementation(libs.androidx.compose.material3)
 }

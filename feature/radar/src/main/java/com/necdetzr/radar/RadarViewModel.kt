@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.necdetzr.common.result.Result
 import com.necdetzr.data.repository.BleRadarRepository
+import com.necdetzr.data.repository.ScanHistoryRepository
 import com.necdetzr.data.repository.UserDataRepository
 import com.necdetzr.model.ScannedBleDevice
+import com.necdetzr.radar.util.ScannedBleDeviceUtils.updateScannedDevice
 import com.necdetzr.ui.DeviceFeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
@@ -26,28 +29,24 @@ import kotlin.time.Duration.Companion.milliseconds
 @HiltViewModel
 class RadarViewModel @Inject constructor(
     private val bleRadarRepository: BleRadarRepository,
-    private val userDataRepository: UserDataRepository
+    private val userDataRepository: UserDataRepository,
+    private val scanHistoryRepository: ScanHistoryRepository
 
 ): ViewModel() {
-
-    private val _feedUiState = MutableStateFlow<DeviceFeedUiState>(DeviceFeedUiState.Idle)
-    val feedUiState : StateFlow<DeviceFeedUiState> = _feedUiState.asStateFlow()
-
-    private val _radarMessage = MutableStateFlow<RadarUserMessage?>(null)
-    val radarMessage : StateFlow<RadarUserMessage?> = _radarMessage.asStateFlow()
+    private val _uiState = MutableStateFlow(RadarScreenState())
+    val uiState : StateFlow<RadarScreenState> = _uiState.asStateFlow()
     private var scanJob: Job? = null
 
     private val _selectedMacAddress = MutableStateFlow<String?>(null)
-
     val selectedDevice: StateFlow<ScannedBleDevice?> = combine(
-        _feedUiState,
+        _uiState,
         _selectedMacAddress
     ) { state, macAddress ->
         if (macAddress == null) return@combine null
 
-        when (state) {
-            is DeviceFeedUiState.Scanning -> state.devices.find { it.macAddress == macAddress }
-            is DeviceFeedUiState.Success -> state.devices.find { it.macAddress == macAddress }
+        when (val feed = state.feedState) {
+            is DeviceFeedUiState.Scanning -> feed.devices.find { it.macAddress == macAddress }
+            is DeviceFeedUiState.Success -> feed.devices.find { it.macAddress == macAddress }
             else -> null
         }
     }.stateIn(
@@ -63,6 +62,12 @@ class RadarViewModel @Inject constructor(
     fun onSheetDismissed(){
         _selectedMacAddress.value = null
     }
+    fun onSaveClick(){
+        _uiState.update { it.copy(showAlertDialog = true) }
+    }
+    fun onSaveDialogDismissed() {
+        _uiState.update { it.copy(showAlertDialog = false) }
+    }
 
     override fun onCleared() {
         scanJob?.cancel()
@@ -71,7 +76,7 @@ class RadarViewModel @Inject constructor(
     fun onStartButtonClicked(){
         scanJob?.cancel()
         scannedDevices.clear()
-        _feedUiState.value = DeviceFeedUiState.Scanning(emptyList())
+        _uiState.update { it.copy(feedState =DeviceFeedUiState.Scanning(emptyList()),saveButtonEnabled = true)}
 
 
         scanJob = viewModelScope.launch {
@@ -83,19 +88,17 @@ class RadarViewModel @Inject constructor(
                 bleRadarRepository
                     .startScanning()
                     .catch {
-                        _radarMessage.value = RadarUserMessage.ScanFailed
+                        _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
                     }
                     .collect { result->
                         when(result){
                             is Result.Success -> {
                                 val newDevice = result.data
-                                scannedDevices[newDevice.macAddress] = newDevice
-                                _feedUiState.value =
-                                    DeviceFeedUiState.Scanning(sortedDevices(currentRssi))
+                                scannedDevices.updateScannedDevice(newDevice)
+                                _uiState.update { it.copy(feedState = DeviceFeedUiState.Scanning(sortedDevices(currentRssi))) }
                             }
                             is Result.Error -> {
-                                _radarMessage.value =
-                                    RadarUserMessage.ScanFailed
+                                _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
 
                             }
                             is Result.Loading -> Unit
@@ -108,12 +111,9 @@ class RadarViewModel @Inject constructor(
         }
     }
     private fun completeScanning(rssi:Int){
-            _feedUiState.value =
-                DeviceFeedUiState.Success(
-                    devices = sortedDevices(rssi)
-                )
-
-
+        _uiState.update {
+            it.copy(feedState = DeviceFeedUiState.Success(devices = sortedDevices(rssi)))
+        }
     }
     private fun sortedDevices(rssi:Int): List<ScannedBleDevice> =
         scannedDevices.values
@@ -129,17 +129,34 @@ class RadarViewModel @Inject constructor(
         }
 
     }
+    fun onSaveRecordClick(name:String){
+        viewModelScope.launch {
+            val currentFeedState = _uiState.value.feedState
+            if(currentFeedState is DeviceFeedUiState.Success){
+                val devicesToSave = currentFeedState.devices
+                scanHistoryRepository.saveFullScan(
+                    name = name.trim(),
+                    devices = devicesToSave
+                )
+            }
+            _uiState.update { it.copy(saveButtonEnabled = false, showAlertDialog = false) }
+        }
+    }
+
     fun onBluetoothNotSupported(){
-        _radarMessage.value = RadarUserMessage.BluetoothNotSupported
+        _uiState.update { it.copy(radarMessage = RadarUserMessage.BluetoothNotSupported) }
     }
+
     fun onPermissionDenied(){
-        _radarMessage.value = RadarUserMessage.PermissionDenied
+        _uiState.update { it.copy(radarMessage = RadarUserMessage.PermissionDenied) }
     }
+
     fun onBluetoothEnableDenied(){
-        _radarMessage.value = RadarUserMessage.BluetoothEnableDenied
+        _uiState.update { it.copy(radarMessage = RadarUserMessage.BluetoothEnableDenied) }
     }
+
     fun onUserMessageShown(){
-        _radarMessage.value = null
+        _uiState.update { it.copy(radarMessage = null) }
     }
 
 }

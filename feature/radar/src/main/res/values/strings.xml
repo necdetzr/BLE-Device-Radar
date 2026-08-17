@@ -14,4 +14,5 @@
     <string name="feature_radar_ready_title">Start a sweep to find nearby BLE devices</string>
     <string name="feature_radar_completed">Scan is completed</string>
     <string name="feature_radar_devices_found">%1$d devices found</string>
+    <string name="feature_radar_save_scan">Save Scan</string>
 </resources>

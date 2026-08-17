@@ -2,4 +2,61 @@
 <resources>
     <string name="feature_history_title">History</string>
 
+    <string name="feature_history_unknown_device">
+        Unknown Device
+    </string>
+
+    <string name="feature_history_last_seen">
+        Last seen %1$s
+    </string>
+
+    <string name="feature_history_device_history_summary">
+        %1$s • %2$s
+    </string>
+
+    <string name="feature_history_collapse_device_details">
+        Collapse device details
+    </string>
+
+    <string name="feature_history_expand_device_details">
+        Expand device details
+    </string>
+
+    <string name="feature_history_seen_in_scans_title">
+        Seen in scans
+    </string>
+
+    <string name="feature_history_no_scan_history">
+        No scan history found
+    </string>
+
+    <plurals name="feature_history_seen_in_scan_count">
+        <item quantity="one">Seen in %1$d scan</item>
+        <item quantity="other">Seen in %1$d scans</item>
+    </plurals>
+
+    <plurals name="feature_history_device_count">
+        <item quantity="one">%1$d device</item>
+        <item quantity="other">%1$d devices</item>
+    </plurals>
+    <string name="feature_history_devices">Devices</string>
+    <string name="feature_history_packets">Packets</string>
+    <string name="feature_history_connectable">Connectable</string>
+    <string name="feature_history_search_scans_or_devices_placeholder">Search scans or devices…</string>
+    <string name="feature_history_search_title">Search</string>
+    <string name="feature_history_navigate_back">Back</string>
+    <string name="feature_history_scans">Scans</string>
+    <string name="feature_history_category_all">All</string>
+    <string name="feature_history_category_device">Device</string>
+    <string name="feature_history_category_scan">Scan</string>
+    <string name="feature_history_subtitle">Search your saved scans.</string>
+
+    <string name="feature_history_total_scans">Total Scans</string>
+    <string name="feature_history_saved_all_time">Saved - All Time</string>
+    <string name="feature_history_last_seen_title">Last Seen</string>
+
+    <string name="feature_history_recent_activity">Recent Activity</string>
+
+    <string name="feature_history_no_value">-</string>
+    <string name="feature_history_no_scans_saved">No scans saved</string>
 </resources>

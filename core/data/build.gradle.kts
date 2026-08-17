@@ -14,6 +14,8 @@ dependencies {
     implementation(project(":core:datastore"))
     implementation(project(":core:common"))
     implementation(project(":core:ble"))
+    implementation(project(":core:database"))
+
 
 
 
