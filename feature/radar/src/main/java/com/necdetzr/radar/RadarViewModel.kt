@@ -8,6 +8,7 @@ import com.necdetzr.data.repository.BleRadarRepository
 import com.necdetzr.data.repository.ScanHistoryRepository
 import com.necdetzr.data.repository.UserDataRepository
 import com.necdetzr.model.ScannedBleDevice
+import com.necdetzr.radar.util.ScannedBleDeviceUtils.updateScannedDevice
 import com.necdetzr.ui.DeviceFeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -93,7 +94,7 @@ class RadarViewModel @Inject constructor(
                         when(result){
                             is Result.Success -> {
                                 val newDevice = result.data
-                                scannedDevices[newDevice.macAddress] = newDevice
+                                scannedDevices.updateScannedDevice(newDevice)
                                 _uiState.update { it.copy(feedState = DeviceFeedUiState.Scanning(sortedDevices(currentRssi))) }
                             }
                             is Result.Error -> {
