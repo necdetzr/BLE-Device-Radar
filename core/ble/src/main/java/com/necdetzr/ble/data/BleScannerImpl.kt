@@ -1,7 +1,6 @@
 package com.necdetzr.ble.data
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -26,12 +25,19 @@ class BleScannerImpl @Inject constructor(
     private val dispatcher : CoroutineDispatcher
 ) : BleScanner {
 
-    private val bluetoothAdapter : BluetoothAdapter?
-        get() = bluetoothManager.adapter
 
     @SuppressLint("MissingPermission")
     override fun startScanning(): Flow<Result<ScannedBleDevice>> = callbackFlow{
-        val scanner = bluetoothAdapter?.bluetoothLeScanner
+        val adapter = bluetoothManager.adapter
+        if(adapter == null){
+            close(Exception("Bluetooth is not supported."))
+            return@callbackFlow
+        }
+        if(!adapter.isEnabled){
+            close(Exception("Bluetooth is disabled."))
+            return@callbackFlow
+        }
+        val scanner = adapter.bluetoothLeScanner
         if (scanner == null){
             close(Exception("Bluetooth hardware not available"))
             return@callbackFlow
