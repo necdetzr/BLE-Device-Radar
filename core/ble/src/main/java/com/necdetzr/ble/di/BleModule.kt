@@ -25,11 +25,10 @@ abstract class BleModule {
     companion object {
         @Provides
         @Singleton
-        fun provideBluetoothAdapter(
+        fun provideBluetoothManager(
             @ApplicationContext context: Context
-        ) : BluetoothAdapter {
-            val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-            return manager.adapter
+        ) : BluetoothManager {
+            return context.getSystemService(BluetoothManager::class.java)
         }
     }
 }

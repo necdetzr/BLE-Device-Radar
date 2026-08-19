@@ -100,52 +100,62 @@ internal fun RadarScreen(
             viewModel.onBluetoothEnableDenied()
         }
     }
-    LaunchedEffect(stateHolder.bluetoothAdapter) {
-        if (stateHolder.bluetoothAdapter == null) {
-            viewModel.onBluetoothNotSupported()
-        }
-    }
-
-    if (stateHolder.bluetoothAdapter == null) return
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissionMap ->
         val areAllPermissionsGranted = permissionMap.values.all { it }
-        if (areAllPermissionsGranted) {
-            if (stateHolder.bluetoothAdapter.isEnabled) {
+        val adapter = stateHolder.bluetoothAdapter
+
+        when {
+            !areAllPermissionsGranted -> {
+                viewModel.onPermissionDenied()
+            }
+
+            adapter == null -> {
+                return@rememberLauncherForActivityResult
+            }
+
+            adapter.isEnabled -> {
                 viewModel.onStartButtonClicked()
-            } else {
-                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            }
+
+            else -> {
+                val enableBtIntent =
+                    Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+
                 enableBluetoothLauncher.launch(enableBtIntent)
             }
-        }else{
-            viewModel.onPermissionDenied()
         }
     }
+    if(stateHolder.bluetoothAdapter == null){
+        BluetoothNotSupportedScreen()
+    }else{
+        RadarScreen(
+            uiState = uiState,
+            onDeviceClick = {device->
+                viewModel.onDeviceSelected(device)
+            },
+            snackbarHostState = stateHolder.snackbarHostState,
+            onButtonClick = {
+                if(stateHolder.hasAllPermissions()){
+                    if(stateHolder.bluetoothAdapter.isEnabled){
+                        viewModel.onStartButtonClicked()
+                    }else{
+                        enableBluetoothLauncher.launch(stateHolder.createEnableBtIntent())
+                    }
+                }else{
+                    permissionLauncher.launch(stateHolder.permissions)
+                }
 
-    RadarScreen(
-        uiState = uiState,
-        onDeviceClick = {device->
-            viewModel.onDeviceSelected(device)
-        },
-        snackbarHostState = stateHolder.snackbarHostState,
-        onButtonClick = {
-           if(stateHolder.hasAllPermissions()){
-               if(stateHolder.bluetoothAdapter.isEnabled){
-                   viewModel.onStartButtonClicked()
-               }else{
-                   enableBluetoothLauncher.launch(stateHolder.createEnableBtIntent())
-               }
-           }else{
-               permissionLauncher.launch(stateHolder.permissions)
-           }
+            },
+            onCancelClick = viewModel::onStopButtonClicked,
+            onSaveButton = viewModel::onSaveClick,
+            modifier = modifier
+        )
+    }
 
-        },
-        onCancelClick = viewModel::onStopButtonClicked,
-        onSaveButton = viewModel::onSaveClick,
-        modifier = modifier
-    )
+
     selectedDevice?.let { device ->
         DeviceDetailSheet(
             device = device,
@@ -184,6 +194,7 @@ internal fun RadarScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
 
         ) { paddingValues ->
+
 
         Column(
             modifier = Modifier
@@ -262,6 +273,46 @@ internal fun RadarScreen(
                     isScanning = uiState.feedState is DeviceFeedUiState.Scanning
                 )
             }
+
+        }
+    }
+}
+@Composable
+private fun BluetoothNotSupportedScreen(
+    modifier: Modifier = Modifier
+){
+    Scaffold(
+        modifier = modifier
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = BleIcons.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(100.dp)
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.feature_radar_bluetooth_not_supported),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = stringResource(R.string.feature_radar_bluetooth_not_supported_desc),
+                color = MaterialTheme.colorScheme.outline,
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
+            )
 
         }
     }
@@ -618,8 +669,6 @@ fun RadarAnimation(isScanning: Boolean) {
 }
 private val RadarUserMessage.stringResource: Int
     get() = when (this) {
-        RadarUserMessage.BluetoothNotSupported ->
-            R.string.feature_radar_bluetooth_not_supported
 
         RadarUserMessage.PermissionDenied ->
             R.string.feature_radar_bluetooth_permission_denied
@@ -638,4 +687,9 @@ private fun ScanButtonPreview(){
         onClick = {},
         isScanning = false
     )
+}
+@Preview
+@Composable
+private fun BluetoothNotSupportedPreview(){
+    BluetoothNotSupportedScreen()
 }
