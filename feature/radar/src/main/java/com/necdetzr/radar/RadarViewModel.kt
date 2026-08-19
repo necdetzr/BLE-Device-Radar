@@ -80,33 +80,40 @@ class RadarViewModel @Inject constructor(
 
 
         scanJob = viewModelScope.launch {
-           val userData = userDataRepository.userPreferences.first()
-            val scanPeriod = userData.scanPeriod
-            val currentRssi = userData.rssiRange
-
-            withTimeoutOrNull(scanPeriod.milliseconds){
-                bleRadarRepository
-                    .startScanning()
-                    .catch {
-                        _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
-                    }
-                    .collect { result->
-                        when(result){
-                            is Result.Success -> {
-                                val newDevice = result.data
-                                scannedDevices.updateScannedDevice(newDevice)
-                                _uiState.update { it.copy(feedState = DeviceFeedUiState.Scanning(sortedDevices(currentRssi))) }
-                            }
-                            is Result.Error -> {
-                                _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
-
-                            }
-                            is Result.Loading -> Unit
+            var scanFailed = false
+            try {
+                val userData = userDataRepository.userPreferences.first()
+                val scanPeriod = userData.scanPeriod
+                val currentRssi = userData.rssiRange
+                withTimeoutOrNull(scanPeriod.milliseconds){
+                    bleRadarRepository
+                        .startScanning()
+                        .catch {
+                            scanFailed = true
+                            _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
                         }
+                        .collect { result->
+                            when(result){
+                                is Result.Success -> {
+                                    val newDevice = result.data
+                                    scannedDevices.updateScannedDevice(newDevice)
+                                    _uiState.update { it.copy(feedState = DeviceFeedUiState.Scanning(sortedDevices(currentRssi))) }
+                                }
+                                is Result.Error -> {
+                                    scanFailed = true
+                                    _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
+
+                                }
+                                is Result.Loading -> Unit
+                            }
+                        }
+                    if(!scanFailed){
+                        completeScanning(currentRssi)
                     }
+                }
+            }finally {
+                scanJob = null
             }
-            completeScanning(currentRssi)
-            scanJob = null
 
         }
     }
