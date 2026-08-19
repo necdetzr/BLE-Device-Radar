@@ -150,9 +150,6 @@ class RadarViewModel @Inject constructor(
         }
     }
 
-    fun onBluetoothNotSupported(){
-        _uiState.update { it.copy(radarMessage = RadarUserMessage.BluetoothNotSupported) }
-    }
 
     fun onPermissionDenied(){
         _uiState.update { it.copy(radarMessage = RadarUserMessage.PermissionDenied) }
@@ -169,7 +166,6 @@ class RadarViewModel @Inject constructor(
 }
 
 sealed interface RadarUserMessage {
-    data object BluetoothNotSupported : RadarUserMessage
     data object PermissionDenied : RadarUserMessage
     data object ScanFailed : RadarUserMessage
     data object BluetoothEnableDenied : RadarUserMessage
