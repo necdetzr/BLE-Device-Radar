@@ -18,16 +18,15 @@ import kotlin.collections.map
 internal fun ScanResult.toScannedBleDevice(): ScannedBleDevice {
     val record = this.scanRecord
     val now = System.currentTimeMillis()
-
-    val deviceName = try {
-        when {
-            !device.name.isNullOrBlank() -> device.name
-            !record?.deviceName.isNullOrBlank() -> record.deviceName
-            else -> "Unknown Device"
-        }
-    } catch (_: SecurityException) {
-        "Unknown Device"
+    val advertisedName = record
+        ?.deviceName
+        ?.takeUnless(String::isBlank)
+    val cachedName = try {
+        device?.name?.takeUnless(String::isBlank)
+    }catch (_: SecurityException){
+        null
     }
+    val deviceName = advertisedName ?: cachedName
     val resolvedTxPower = txPower.takeUnless { it == ScanResult.TX_POWER_NOT_PRESENT }
         ?: record?.txPowerLevel?.takeUnless { it == Int.MIN_VALUE }
     return ScannedBleDevice(
