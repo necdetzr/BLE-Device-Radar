@@ -30,7 +30,7 @@ data class BleDeviceEntity (
     val deviceId:Long = 0,
     val ownerScanId: Long,
     val macAddress:String,
-    val deviceName:String,
+    val deviceName:String?,
     val rssi:Int,
     val firstSeenAt: Long,
     val lastSeenAt: Long,
