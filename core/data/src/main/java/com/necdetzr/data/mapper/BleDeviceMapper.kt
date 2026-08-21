@@ -22,7 +22,7 @@ internal fun ScannedBleDevice.toEntity(
     return BleDeviceEntity(
         ownerScanId = ownerScanId,
         macAddress = macAddress,
-        deviceName = name ?: "Unknown Device",
+        deviceName = name,
         rssi = rssi,
         firstSeenAt = firstSeenAt,
         lastSeenAt = lastSeenAt,
