@@ -14,6 +14,7 @@ object ScannedBleDeviceUtils {
             )
         } else {
             newDevice.copy(
+                name = newDevice.name ?: existingDevice.name,
                 firstSeenAt = existingDevice.firstSeenAt,
                 packetCount = existingDevice.packetCount + 1
             )
