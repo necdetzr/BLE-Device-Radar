@@ -70,6 +70,7 @@ private fun Int.toBlePhy(): BlePhy {
         BluetoothDevice.PHY_LE_1M -> BlePhy.LE_1M
         BluetoothDevice.PHY_LE_2M -> BlePhy.LE_2M
         BluetoothDevice.PHY_LE_CODED -> BlePhy.LE_CODED
+        ScanResult.PHY_UNUSED -> BlePhy.UNUSED
         else -> BlePhy.UNKNOWN
     }
 }

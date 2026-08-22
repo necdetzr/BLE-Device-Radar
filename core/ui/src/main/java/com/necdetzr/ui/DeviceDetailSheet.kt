@@ -12,10 +12,8 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +28,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -52,13 +49,13 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.necdetzr.designsystem.icons.BleIcons
 import com.necdetzr.model.ScannedBleDevice
 import com.necdetzr.ui.mapper.BleAssignedNumbersMapper
+import com.necdetzr.ui.util.toReadableDateTime
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -136,7 +133,7 @@ fun DeviceDetailSheetContent(
 
         RssiCard(
             rssi = bleDevice.rssi,
-            lastSeen = stringResource(R.string.core_ui_just_now)
+            lastSeen = bleDevice.lastSeenAt.toReadableDateTime()
         )
 
         DeviceInfoGrid(
@@ -207,7 +204,10 @@ private fun DetailedInfoSection(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Payload: ${data.payload.contentToString()}",
+                            text = stringResource(
+                                R.string.core_ui_payload,
+                                data.payload.toHexString()
+                            ),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -257,7 +257,7 @@ private fun DetailedInfoSection(
         ) {
             SelectionContainer {
                 Text(
-                    text = bleDevice.advertisement.rawData.joinToString(" ") { String.format("%02X", it) },
+                    text = bleDevice.advertisement.rawData.toHexString(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -270,6 +270,15 @@ private fun DetailedInfoSection(
             icon = BleIcons.Info,
             showDivider = false
         ) {
+            val periodicIntervalText =
+                bleDevice.advertisement.periodicAdvertisingInterval
+                    ?.let { interval ->
+                        stringResource(
+                            R.string.core_ui_milliseconds,
+                            interval * 1.25
+                        )
+                    }
+                    ?: stringResource(R.string.core_ui_not_available)
             Text(
                 text = stringResource(R.string.core_ui_sid,bleDevice.advertisement.advertisingSid ?: "N/A"),
                 style = MaterialTheme.typography.bodyMedium,
@@ -281,7 +290,9 @@ private fun DetailedInfoSection(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = stringResource(R.string.core_ui_periodic_interval,bleDevice.advertisement.periodicAdvertisingInterval ?: "N/A"),
+                text = stringResource(R.string.core_ui_periodic_interval,
+                    periodicIntervalText
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -356,7 +367,11 @@ private fun DeviceInfoGrid(device: ScannedBleDevice) {
             InfoCard(
                 modifier = Modifier.weight(1f),
                 title = stringResource(R.string.core_ui_connectable),
-                value = if (device.advertisement.isConnectable == true) stringResource(R.string.core_ui_yes) else stringResource(R.string.core_ui_no),
+                value = when (device.advertisement.isConnectable) {
+                    true -> stringResource(R.string.core_ui_yes)
+                    false -> stringResource(R.string.core_ui_no)
+                    null -> stringResource(R.string.core_ui_unknown)
+                },
                 icon = BleIcons.Connect
             )
         }
