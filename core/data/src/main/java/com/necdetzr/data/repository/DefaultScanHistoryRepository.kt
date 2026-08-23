@@ -24,8 +24,8 @@ class DefaultScanHistoryRepository @Inject constructor(
         return dao.getTotalScanCount()
     }
 
-    override fun searchScans(query: String): Flow<List<ScanRecord>> {
-        return dao.searchScans(query)
+    override fun searchScans(query: String,limit:Int): Flow<List<ScanRecord>> {
+        return dao.searchScans(query,limit)
             .map { entities ->
                 entities.map(ScanRecordEntity::toModel)
             }

@@ -1,5 +1,6 @@
 package com.necdetzr.database.entities
 
+import android.R.attr.value
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -19,6 +20,7 @@ import com.necdetzr.model.BleAdvertisement
     ],
     indices = [
         Index("ownerScanId"),
+        Index("macAddress"),
         Index(
             value = ["ownerScanId","macAddress"],
             unique = true

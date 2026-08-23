@@ -13,7 +13,7 @@ import com.necdetzr.database.entities.ScanRecordEntity
         BleDeviceEntity::class
     ],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(BleTypeConverters::class)
 abstract class BleRadarDatabase : RoomDatabase() {

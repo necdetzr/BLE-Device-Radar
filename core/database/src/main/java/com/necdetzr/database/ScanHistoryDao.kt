@@ -46,9 +46,10 @@ interface ScanHistoryDao {
             SELECT * FROM scan_records
             WHERE scanName LIKE '%' || :query || '%'
             ORDER BY timeStamp DESC
+            LIMIT :limit
         """
     )
-    fun searchScans(query:String) : Flow<List<ScanRecordEntity>>
+    fun searchScans(query:String,limit:Int) : Flow<List<ScanRecordEntity>>
     @Query(
         """
     SELECT d.*, s.*

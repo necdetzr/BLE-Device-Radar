@@ -13,6 +13,6 @@ interface ScanHistoryRepository {
     fun getScanWithDevices(scanId:Long):Flow<ScanRecordDetail?>
     suspend fun deleteScan(scanId:Long)
     fun getTotalScanCount(): Flow<Int>
-    fun searchScans(query:String) : Flow<List<ScanRecord>>
+    fun searchScans(query:String,limit:Int) : Flow<List<ScanRecord>>
     fun searchDevices(query:String,limit:Int) : Flow<List<DeviceSearchResult>>
 }
