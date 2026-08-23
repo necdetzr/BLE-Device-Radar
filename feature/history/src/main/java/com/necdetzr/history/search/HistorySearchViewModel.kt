@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.necdetzr.data.repository.ScanHistoryRepository
 import com.necdetzr.history.R
+import com.necdetzr.model.ScanRecord
 import com.necdetzr.model.ScanRecordDetail
 import com.necdetzr.model.ScannedBleDevice
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,10 +36,12 @@ class HistorySearchViewModel @Inject constructor(
 
     private val _query = MutableStateFlow("")
     private val _selectedCategory = MutableStateFlow(SearchCategory.ALL)
-    private val _expandedDeviceMac = MutableStateFlow<String?>(null)
+    private val _expandedDeviceState =
+        MutableStateFlow(ExpandedDeviceState())
+
+    private var deviceScansLoadJob: Job? = null
     private val _sheetState = MutableStateFlow(SheetState())
     private var scanLoadJob: Job? = null
-
     @OptIn(FlowPreview::class)
     private val normalizedQuery =
         _query
@@ -92,9 +95,9 @@ class HistorySearchViewModel @Inject constructor(
             _query,
             searchResults,
             _selectedCategory,
-            _expandedDeviceMac,
+            _expandedDeviceState,
             _sheetState,
-            ){query,results,category,expandedDeviceMac,sheetState->
+            ){query,results,category,expandedDeviceState,sheetState->
             val (scans, devices) = results
 
             HistorySearchViewState(
@@ -102,9 +105,10 @@ class HistorySearchViewModel @Inject constructor(
                 scanResults = scans,
                 deviceResults = devices,
                 selectedCategory = category,
-                expandedDeviceMac = expandedDeviceMac,
+                expandedDeviceMac = expandedDeviceState.macAddress,
                 selectedScan = sheetState.selectedScan,
                 selectedDevice = sheetState.selectedDevice,
+                expandedDeviceScans = expandedDeviceState.scans
 
             )
         }.stateIn(
@@ -120,9 +124,29 @@ class HistorySearchViewModel @Inject constructor(
     }
 
     fun onDeviceExpandClick(macAddress:String){
-        _expandedDeviceMac.update { currentMac->
-            if(currentMac == macAddress) null else macAddress
+        val currentState = _expandedDeviceState.value
+        if (currentState.macAddress == macAddress) {
+            deviceScansLoadJob?.cancel()
+            _expandedDeviceState.value = ExpandedDeviceState()
+            return
         }
+        deviceScansLoadJob?.cancel()
+
+        _expandedDeviceState.value = ExpandedDeviceState(
+            macAddress = macAddress,
+        )
+        deviceScansLoadJob = viewModelScope.launch {
+            val scans = scanHistoryRepository
+                .getScansForDevice(macAddress)
+                .first()
+
+            if (_expandedDeviceState.value.macAddress == macAddress) {
+                _expandedDeviceState.update {
+                    it.copy(scans = scans)
+                }
+            }
+        }
+
     }
 
     fun onScanClick(scanId: Long) {
@@ -171,4 +195,8 @@ enum class SearchCategory(
 private data class SheetState(
     val selectedScan: ScanRecordDetail? = null,
     val selectedDevice: ScannedBleDevice? = null,
+)
+private data class ExpandedDeviceState(
+    val macAddress: String? = null,
+    val scans: List<ScanRecord> = emptyList(),
 )

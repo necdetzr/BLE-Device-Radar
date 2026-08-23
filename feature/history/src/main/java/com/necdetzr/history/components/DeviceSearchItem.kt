@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import com.necdetzr.ui.util.toReadableDateTime
 @Composable
 fun DeviceSearchItem(
     device: ScannedBleDevice,
+    scanCount:Int,
     seenInScans: List<ScanRecord>,
     expanded: Boolean,
     onExpandClick: (String) -> Unit,
@@ -51,32 +53,29 @@ fun DeviceSearchItem(
         targetValue = if (expanded) 180f else 0f,
         label = "deviceArrowRotation",
     )
-    val lastSeenScan = seenInScans.maxByOrNull { it.timestamp }
     val seenInScansText = pluralStringResource(
         id = R.plurals.feature_history_seen_in_scan_count,
         count = seenInScans.size,
-        seenInScans.size,
+        scanCount,
     )
 
-    val lastSeenText = lastSeenScan?.let { scan ->
-        stringResource(
-            id = R.string.feature_history_last_seen,
-            scan.timestamp.toReadableDateTime(),
-        )
-    }
+    val lastSeenText = stringResource(
+        id = R.string.feature_history_last_seen,
+        device.lastSeenAt.toReadableDateTime()
+    )
 
-    val historySummary = if (lastSeenText != null) {
+    val historySummary =
         stringResource(
             id = R.string.feature_history_device_history_summary,
-            seenInScansText,
-            lastSeenText,
-        )
-    } else {
-        seenInScansText
-    }
+            seenInScansText, lastSeenText,
+            )
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
+            .clickable(
+                onClick = { onExpandClick(device.macAddress) }
+            )
             .padding(
                 horizontal = 12.dp,
                 vertical = 4.dp,

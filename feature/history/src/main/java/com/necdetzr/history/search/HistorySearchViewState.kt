@@ -14,4 +14,5 @@ data class HistorySearchViewState(
     val selectedScanId: Long? = null,
     val selectedScan: ScanRecordDetail? = null,
     val selectedDevice: ScannedBleDevice? = null,
+    val expandedDeviceScans: List<ScanRecord> = emptyList(),
 )

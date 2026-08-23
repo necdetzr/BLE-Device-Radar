@@ -32,41 +32,14 @@ class DefaultScanHistoryRepository @Inject constructor(
     }
 
     override fun searchDevices(query: String,limit:Int): Flow<List<DeviceSearchResult>> {
-        return dao.searchDevicesWithScans(query,limit)
+        return dao.searchDeviceSummaries(query,limit)
             .map { rows ->
-                rows
-                    .groupBy { row ->
-                        row.device.macAddress
-                    }
-                    .map { (_, occurrences) ->
-                        val latestOccurrence =
-                            occurrences.maxBy { occurrence ->
-                                occurrence.device.lastSeenAt
-                            }
-
-                        DeviceSearchResult(
-                            device = latestOccurrence.device.toModel(),
-                            scans = occurrences
-                                .map { occurrence ->
-                                    occurrence.scan.toModel()
-                                }
-                                .distinctBy { scan ->
-                                    scan.scanId
-                                }
-                                .sortedByDescending { scan ->
-                                    scan.timestamp
-                                },
-                        )
-                    }
-                    .sortedWith(
-                        compareByDescending<DeviceSearchResult> {
-                            it.scans.size
-                        }.thenByDescending {
-                            it.scans.maxOfOrNull { scan ->
-                                scan.timestamp
-                            } ?: 0L
-                        }
+                rows.map { row->
+                    DeviceSearchResult(
+                        device = row.device.toModel(),
+                        scanCount = row.scanCount
                     )
+                }
             }
     }
 
@@ -107,5 +80,13 @@ class DefaultScanHistoryRepository @Inject constructor(
             scanRecord = scanRecordEntity,
             devices = deviceEntities
         )
+    }
+    override fun getScansForDevice(
+        macAddress: String,
+    ): Flow<List<ScanRecord>> {
+        return dao.getScansForDevice(macAddress)
+            .map { entities ->
+                entities.map(ScanRecordEntity::toModel)
+            }
     }
 }

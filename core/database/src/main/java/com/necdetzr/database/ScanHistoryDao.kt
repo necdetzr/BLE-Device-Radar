@@ -7,7 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.necdetzr.database.entities.BleDeviceEntity
 import com.necdetzr.database.entities.ScanRecordEntity
-import com.necdetzr.database.relations.DeviceScanRow
+import com.necdetzr.database.relations.DeviceSearchSummaryRow
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -50,28 +50,52 @@ interface ScanHistoryDao {
         """
     )
     fun searchScans(query:String,limit:Int) : Flow<List<ScanRecordEntity>>
+
     @Query(
         """
-    SELECT d.*, s.*
-    FROM scanned_devices d
-    JOIN scan_records s ON s.scanId = d.ownerScanId
-    WHERE d.macAddress IN (
-        SELECT macAddress
-        FROM scanned_devices
-        WHERE deviceName LIKE '%' || :query || '%'
-           OR macAddress LIKE '%' || :query || '%'
-        GROUP BY macAddress
-        ORDER BY
-            COUNT(DISTINCT ownerScanId) DESC,
-            MAX(lastSeenAt) DESC
+                SELECT device.*,
+            (
+                SELECT COUNT(*)
+                FROM scanned_devices AS occurrence
+                WHERE occurrence.macAddress = device.macAddress
+            ) AS scanCount
+            FROM scanned_devices AS device
+            WHERE device.deviceId = (
+                SELECT latest.deviceId
+                FROM scanned_devices AS latest
+                WHERE latest.macAddress = device.macAddress
+                ORDER BY latest.lastSeenAt DESC, latest.deviceId DESC
+                LIMIT 1
+            )
+            AND EXISTS (
+                SELECT 1
+                FROM scanned_devices AS matching
+                WHERE matching.macAddress = device.macAddress
+                AND (
+                    matching.deviceName LIKE '%' || :query || '%' COLLATE NOCASE
+                    OR matching.macAddress LIKE '%' || :query || '%' COLLATE NOCASE
+            )
+         )
+        ORDER BY scanCount DESC, device.lastSeenAt DESC
         LIMIT :limit
+        """
     )
-    ORDER BY s.timeStamp DESC
-    """
+    fun searchDeviceSummaries(
+        query:String,
+        limit: Int
+    ) : Flow<List<DeviceSearchSummaryRow>>
+    @Query(
+        """
+            SELECT scan_records.*
+            FROM scan_records
+            INNER JOIN scanned_devices
+                ON scanned_devices.ownerScanId = scan_records.scanId
+            WHERE scanned_devices.macAddress = :macAddress
+            ORDER BY scan_records.timeStamp DESC
+        """
     )
-    fun searchDevicesWithScans(
-        query: String,
-        limit: Int,
-    ): Flow<List<DeviceScanRow>>
+    fun getScansForDevice(
+        macAddress: String
+    ):Flow<List<ScanRecordEntity>>
 
 }

@@ -15,4 +15,5 @@ interface ScanHistoryRepository {
     fun getTotalScanCount(): Flow<Int>
     fun searchScans(query:String,limit:Int) : Flow<List<ScanRecord>>
     fun searchDevices(query:String,limit:Int) : Flow<List<DeviceSearchResult>>
+    fun getScansForDevice(macAddress: String): Flow<List<ScanRecord>>
 }
