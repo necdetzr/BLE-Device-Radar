@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -38,29 +39,47 @@ class HistorySearchViewModel @Inject constructor(
     private val _sheetState = MutableStateFlow(SheetState())
     private var scanLoadJob: Job? = null
 
+    @OptIn(FlowPreview::class)
+    private val normalizedQuery =
+        _query
+            .map(String::trim)
+            .debounce(300.milliseconds)
+            .distinctUntilChanged()
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private val scanResults =
-        _query
-            .map(String::trim)
-            .debounce(300.milliseconds)
-            .distinctUntilChanged()
-            .flatMapLatest(scanHistoryRepository::searchScans)
+        combine(
+            normalizedQuery,
+            _selectedCategory
+        ) {query,category->
+            query to category
+        }.flatMapLatest{(query,category)->
+            if(category == SearchCategory.DEVICE){
+                flowOf(emptyList())
+            }else{
+                scanHistoryRepository.searchScans(
+                    query = query,
+                    limit = if(query.isBlank()) 10 else 30
+                )
+            }
+        }
+
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private val deviceResults =
-        _query
-            .map(String::trim)
-            .debounce(300.milliseconds)
-            .distinctUntilChanged()
-            .flatMapLatest { query ->
-                if (query.isBlank()) {
-                    scanHistoryRepository.searchDevices(query,10)
-                } else {
-                    scanHistoryRepository.searchDevices(
-                        query = query,
-                        limit = 30,
-                    )
-                }
+        combine(
+            normalizedQuery,
+            _selectedCategory
+        ){query,category->
+            query to category
+        }.flatMapLatest { (query,category) ->
+            if (category == SearchCategory.SCAN) {
+                flowOf(emptyList())
+            } else {
+                scanHistoryRepository.searchDevices(
+                    query = query,
+                    limit = if (query.isBlank()) 10 else 30
+                )
             }
+        }
     private val searchResults =
         combine(
             scanResults,
