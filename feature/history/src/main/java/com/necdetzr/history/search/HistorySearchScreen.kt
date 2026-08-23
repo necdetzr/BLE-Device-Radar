@@ -53,7 +53,8 @@ fun HistorySearchScreen(
         onScanClick = viewModel::onScanClick,
         onDeviceExpandClick = viewModel::onDeviceExpandClick,
         expandedDeviceMac = uiState.expandedDeviceMac,
-        devices = uiState.deviceResults
+        devices = uiState.deviceResults,
+        expandedDeviceScans = uiState.expandedDeviceScans,
     )
     uiState.selectedScan?.let {scan->
         ScanRecordSheet(
@@ -79,7 +80,8 @@ internal fun HistorySearchScreen(
     onScanClick: (Long) -> Unit,
     onDeviceExpandClick: (String) -> Unit,
     expandedDeviceMac:String?,
-    devices:List<DeviceSearchResult>
+    devices:List<DeviceSearchResult>,
+    expandedDeviceScans: List<ScanRecord>,
 ){
     Scaffold(
         modifier = modifier,
@@ -112,6 +114,7 @@ internal fun HistorySearchScreen(
                 onScanClick = onScanClick,
                 onDeviceExpandClick = onDeviceExpandClick,
                 expandedDeviceMac = expandedDeviceMac,
+                expandedDeviceScans = expandedDeviceScans
             )
         }
     }
@@ -188,6 +191,7 @@ private fun SearchResult(
     onScanClick: (Long) -> Unit,
     onDeviceExpandClick: (String) -> Unit,
     expandedDeviceMac: String?,
+    expandedDeviceScans: List<ScanRecord>
 ){
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
@@ -213,6 +217,7 @@ private fun SearchResult(
                 expandedDeviceMac = expandedDeviceMac,
                 onDeviceExpandClick = onDeviceExpandClick,
                 onScanClick = onScanClick,
+                expandedDeviceScans = expandedDeviceScans
             )
         }
     }
@@ -247,7 +252,9 @@ private fun LazyListScope.deviceSection(
     onDeviceExpandClick: (String) -> Unit,
     expandedDeviceMac: String?,
     onScanClick: (Long) -> Unit,
+    expandedDeviceScans: List<ScanRecord>
 ){
+
     item {
         Text(
             text = stringResource(R.string.feature_history_devices),
@@ -259,12 +266,19 @@ private fun LazyListScope.deviceSection(
         items = devices,
         key = {it.device.macAddress}
     ){device->
+        val expanded =
+            expandedDeviceMac == device.device.macAddress
         DeviceSearchItem(
             device = device.device,
+            scanCount = device.scanCount,
             onExpandClick = onDeviceExpandClick,
             expanded = expandedDeviceMac == device.device.macAddress,
             onScanClick = onScanClick,
-            seenInScans = device.scans
+            seenInScans = if (expanded) {
+                expandedDeviceScans
+            } else {
+                emptyList()
+            },
         )
     }
 

@@ -1,0 +1,157 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "0b3458a4e7c9edeafba8b1044fdfce74",
+    "entities": [
+      {
+        "tableName": "scan_records",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scanId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `scanName` TEXT NOT NULL, `timeStamp` INTEGER NOT NULL, `deviceCount` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "scanId",
+            "columnName": "scanId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scanName",
+            "columnName": "scanName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeStamp",
+            "columnName": "timeStamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceCount",
+            "columnName": "deviceCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "scanId"
+          ]
+        }
+      },
+      {
+        "tableName": "scanned_devices",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`deviceId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `ownerScanId` INTEGER NOT NULL, `macAddress` TEXT NOT NULL, `deviceName` TEXT, `rssi` INTEGER NOT NULL, `firstSeenAt` INTEGER NOT NULL, `lastSeenAt` INTEGER NOT NULL, `packetCount` INTEGER NOT NULL, `advertisement` TEXT NOT NULL, FOREIGN KEY(`ownerScanId`) REFERENCES `scan_records`(`scanId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "deviceId",
+            "columnName": "deviceId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerScanId",
+            "columnName": "ownerScanId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "macAddress",
+            "columnName": "macAddress",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceName",
+            "columnName": "deviceName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rssi",
+            "columnName": "rssi",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firstSeenAt",
+            "columnName": "firstSeenAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSeenAt",
+            "columnName": "lastSeenAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packetCount",
+            "columnName": "packetCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "advertisement",
+            "columnName": "advertisement",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "deviceId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_scanned_devices_ownerScanId",
+            "unique": false,
+            "columnNames": [
+              "ownerScanId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scanned_devices_ownerScanId` ON `${TABLE_NAME}` (`ownerScanId`)"
+          },
+          {
+            "name": "index_scanned_devices_macAddress",
+            "unique": false,
+            "columnNames": [
+              "macAddress"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scanned_devices_macAddress` ON `${TABLE_NAME}` (`macAddress`)"
+          },
+          {
+            "name": "index_scanned_devices_ownerScanId_macAddress",
+            "unique": true,
+            "columnNames": [
+              "ownerScanId",
+              "macAddress"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_scanned_devices_ownerScanId_macAddress` ON `${TABLE_NAME}` (`ownerScanId`, `macAddress`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "scan_records",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "ownerScanId"
+            ],
+            "referencedColumns": [
+              "scanId"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0b3458a4e7c9edeafba8b1044fdfce74')"
+    ]
+  }
+}
