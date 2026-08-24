@@ -107,9 +107,9 @@ class RadarViewModel @Inject constructor(
                                 is Result.Loading -> Unit
                             }
                         }
-                    if(!scanFailed){
-                        completeScanning(currentRssi)
-                    }
+                }
+                if(!scanFailed){
+                    completeScanning(currentRssi)
                 }
             }finally {
                 scanJob = null
