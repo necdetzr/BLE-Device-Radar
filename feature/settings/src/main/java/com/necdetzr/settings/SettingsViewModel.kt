@@ -2,6 +2,7 @@ package com.necdetzr.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.necdetzr.data.repository.ScanHistoryRepository
 import com.necdetzr.data.repository.UserDataRepository
 import com.necdetzr.datastore.BlePreferencesDataSource
 import com.necdetzr.model.ThemeConfig
@@ -19,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
+    private val scanHistoryRepository: ScanHistoryRepository
 ) : ViewModel(){
 
     val settingsUiState: StateFlow<SettingsViewState> = userDataRepository.userPreferences
@@ -49,6 +51,11 @@ class SettingsViewModel @Inject constructor(
      fun setTheme(theme: ThemeConfig){
         viewModelScope.launch {
             userDataRepository.setThemeConfig(theme)
+        }
+    }
+    fun deleteAllScans(){
+        viewModelScope.launch {
+            scanHistoryRepository.deleteAllScans()
         }
     }
 

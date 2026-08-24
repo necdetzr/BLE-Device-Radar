@@ -13,4 +13,17 @@
     <string name="feature_settings_system">System</string>
     <string name="feature_settings_about_system">About System</string>
     <string name="feature_settings_version">Version Info</string>
+    <string name="feature_settings_danger_zone">Danger Zone</string>
+    <string name="feature_settings_delete_scan_history">Delete scan history</string>
+    <string name="feature_settings_delete_scan_history_description">Permanently delete all saved scans and observed device history from this device.</string>
+    <string name="feature_settings_delete_all_scans">Delete all scan history</string>
+    <string name="feature_settings_delete_dialog_title">Delete all scan history?</string>
+    <string name="feature_settings_delete_dialog_message">All saved scans and device history will be permanently deleted. This action cannot be undone.</string>
+    <string name="feature_settings_delete">Delete</string>
+    <string name="feature_settings_cancel">Cancel</string>
+    <string name="feature_settings_rssi_value">%1$d dBm</string>
+    <string name="feature_settings_scan_period_title">Scan Period</string>
+    <string name="feature_settings_scan_period_description">Set how long each device scan should run.</string>
+    <string name="feature_settings_period_seconds">%1$d s</string>
+    <string name="feature_settings_version_value">v%1$s</string>
 </resources>

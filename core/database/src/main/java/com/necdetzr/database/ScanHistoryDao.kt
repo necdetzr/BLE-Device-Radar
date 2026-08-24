@@ -99,5 +99,5 @@ interface ScanHistoryDao {
     ):Flow<List<ScanRecordEntity>>
 
     @Query("DELETE FROM scan_records")
-    fun deleteAllScans()
+    suspend fun deleteAllScans()
 }

@@ -90,7 +90,7 @@ class DefaultScanHistoryRepository @Inject constructor(
             }
     }
 
-    override fun deleteAllScans() {
+    override suspend fun deleteAllScans() {
         dao.deleteAllScans()
     }
 }
