@@ -89,4 +89,8 @@ class DefaultScanHistoryRepository @Inject constructor(
                 entities.map(ScanRecordEntity::toModel)
             }
     }
+
+    override fun deleteAllScans() {
+        dao.deleteAllScans()
+    }
 }
