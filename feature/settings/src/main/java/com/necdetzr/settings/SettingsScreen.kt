@@ -1,7 +1,6 @@
 package com.necdetzr.settings
 
-import android.R.attr.text
-import android.bluetooth.le.ScanSettings
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,20 +16,28 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,9 +63,11 @@ internal fun SettingsScreen(
         onRssiChange = { viewModel.setRssiRange(it) },
         onThemeSelection = {viewModel.setTheme(it)},
         onPeriodClick = {viewModel.setScanPeriod(it)},
+        onDeleteAllScans = {viewModel.deleteAllScans()},
         rssi = uiState.value.rssi,
         currentTheme = uiState.value.theme,
-        period = uiState.value.scanPeriod
+        period = uiState.value.scanPeriod,
+
 
     )
 }
@@ -69,6 +78,7 @@ internal fun SettingsScreen(
     onRssiChange: (Int) -> Unit,
     onThemeSelection: (ThemeConfig) -> Unit,
     onPeriodClick: (Long) -> Unit,
+    onDeleteAllScans: () -> Unit,
     currentTheme: ThemeConfig,
     rssi: Int,
     period:Long
@@ -82,6 +92,7 @@ internal fun SettingsScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
 
         ) {
             SettingsTitle()
@@ -99,6 +110,10 @@ internal fun SettingsScreen(
             )
             Spacer(Modifier.height(24.dp))
             AboutSection()
+            Spacer(Modifier.height(12.dp))
+            DangerZoneSection(
+                onDeleteAllScans = onDeleteAllScans
+            )
 
         }
     }
@@ -208,13 +223,13 @@ private fun ScanPeriodSection(
     )
     Column {
         Text(
-            text = "Scan Period",
+            text = stringResource(R.string.feature_settings_scan_period_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(Modifier.height(2.dp))
         Text(
-            text = "Set the scan interval duration",
+            text = stringResource(R.string.feature_settings_scan_period_description),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -261,7 +276,10 @@ private fun PeriodSubSection(
             .width(60.dp)
     ){
         Text(
-            text = "${period/1000} s",
+            text = stringResource(
+                R.string.feature_settings_period_seconds,
+                period / 1_000,
+            ),
             color = color,
             style = MaterialTheme.typography.bodyMedium
         )
@@ -399,7 +417,10 @@ private fun AboutSection(){
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ){
                     Text(
-                        text = "v" + getAppVersionName(),
+                        text = stringResource(
+                            R.string.feature_settings_version_value,
+                            getAppVersionName(),
+                        ),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         style = MaterialTheme.typography.titleSmall
 
@@ -410,6 +431,139 @@ private fun AboutSection(){
 
     }
 
+}
+@Composable
+private fun DangerZoneSection(
+    onDeleteAllScans: () -> Unit,
+) {
+    var showDeleteDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        SectionTitle(
+            text = stringResource(R.string.feature_settings_danger_zone),
+            color = MaterialTheme.colorScheme.error
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        DeleteHistoryCard(
+            onDeleteClick = {
+                showDeleteDialog = true
+            },
+        )
+    }
+
+    if (showDeleteDialog) {
+        DeleteHistoryDialog(
+            onConfirm = {
+                showDeleteDialog = false
+                onDeleteAllScans()
+            },
+            onDismiss = {
+                showDeleteDialog = false
+            },
+        )
+    }
+}
+@Composable
+private fun DeleteHistoryCard(
+    onDeleteClick: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Icon(
+                    imageVector = BleIcons.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                )
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(
+                        text = stringResource(R.string.feature_settings_delete_scan_history),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.feature_settings_delete_scan_history_description,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onDeleteClick,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
+            ) {
+                Text(stringResource(R.string.feature_settings_delete_all_scans))
+            }
+        }
+    }
+}
+@Composable
+private fun DeleteHistoryDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = BleIcons.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+            )
+        },
+        title = {
+            Text(stringResource(R.string.feature_settings_delete_dialog_title))
+        },
+        text = {
+            Text(stringResource(R.string.feature_settings_delete_dialog_message))
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
+            ) {
+                Text(stringResource(R.string.feature_settings_delete))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.feature_settings_cancel))
+            }
+        },
+    )
 }
 @Composable
 private fun RssiThresholdFilter(
@@ -468,12 +622,13 @@ private fun RssiThresholdFilter(
 @Composable
 private fun SectionTitle(
     modifier:Modifier = Modifier,
+    color:Color = MaterialTheme.colorScheme.primary,
     text: String
 ){
     Text(
         text = text,
         style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary,
+        color = color,
         modifier = modifier
     )
 }

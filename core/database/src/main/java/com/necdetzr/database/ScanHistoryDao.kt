@@ -98,4 +98,6 @@ interface ScanHistoryDao {
         macAddress: String
     ):Flow<List<ScanRecordEntity>>
 
+    @Query("DELETE FROM scan_records")
+    suspend fun deleteAllScans()
 }
