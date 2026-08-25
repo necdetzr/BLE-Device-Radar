@@ -83,7 +83,10 @@ fun BleDeviceCard(
 
                 ){
                     Text(
-                        bleDevice.rssi.toString() + " dBm",
+                        text = stringResource(
+                            R.string.core_ui_dbm_value,
+                            bleDevice.rssi,
+                        ),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }

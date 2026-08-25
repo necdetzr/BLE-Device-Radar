@@ -191,7 +191,10 @@ private fun ScanningSection(
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "$displayRssi dBm",
+                        text = stringResource(
+                            R.string.feature_settings_rssi_value,
+                            displayRssi,
+                        ),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         style = MaterialTheme.typography.labelMedium
                     )
