@@ -1,5 +1,6 @@
 package com.necdetzr.ui
 
+import android.R.attr.end
 import android.content.ClipData
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -51,6 +52,7 @@ import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.necdetzr.designsystem.icons.BleIcons
 import com.necdetzr.model.ScannedBleDevice
@@ -99,6 +101,7 @@ fun DeviceDetailSheetContent(
 
     ) {
         Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -118,6 +121,7 @@ fun DeviceDetailSheetContent(
                 )
             }
             SheetTitle(
+                modifier = Modifier.weight(1f),
                 device = bleDevice,
                 onCopyClick = {
                     coroutineScope.launch {
@@ -316,33 +320,39 @@ private fun DetailedInfoSection(
 }
 @Composable
 private fun SheetTitle(
+    modifier: Modifier = Modifier,
     device: ScannedBleDevice,
     onCopyClick: () -> Unit,
     copied: Boolean
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Text(
             text = device.name ?: stringResource(R.string.core_ui_unknown_device),
             style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
-        Spacer(Modifier.height(8.dp))
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+
         ) {
             Text(
                 text = device.macAddress,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Spacer(Modifier.width(12.dp))
             IconButton(
                 onClick = onCopyClick,
-                modifier = Modifier.size(16.dp),
 
-            ) {
+
+                ) {
                 AnimatedContent(
                     targetState = copied,
                     transitionSpec = {
@@ -466,14 +476,17 @@ private fun DeviceOtherInfoRow(
                 text = title,
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 16.dp)
+                modifier = Modifier.weight(1f)
+                    .padding(start = 16.dp, end = 8.dp),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(end = 8.dp)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
 
             Icon(
@@ -536,7 +549,9 @@ private fun InfoCard(
                 Text(
                     text = title,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             Text(
@@ -601,9 +616,10 @@ private fun RssiCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Row(
+                    modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -628,6 +644,7 @@ private fun RssiCard(
                     }
                 }
                 Row(
+                    modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

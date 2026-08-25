@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -57,6 +58,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
@@ -247,16 +249,19 @@ internal fun RadarScreen(
                 }
             }
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp)
+                    .padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+
             ) {
                 if (uiState.feedState is DeviceFeedUiState.Success) {
                     SaveScanButton(
                         onClick = { onSaveButton() },
-                        modifier = Modifier.height(56.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 56.dp),
                         enabled = uiState.saveButtonEnabled
                     )
                 }
@@ -269,7 +274,9 @@ internal fun RadarScreen(
                             onButtonClick()
                         }
                     },
-                    modifier = Modifier.height(56.dp),
+                    modifier =  Modifier
+                        .weight(1f)
+                        .heightIn(min = 56.dp),
                     isScanning = uiState.feedState is DeviceFeedUiState.Scanning
                 )
             }
@@ -344,7 +351,9 @@ private fun SaveScanButton(
             Spacer(Modifier.width(6.dp))
             Text(
                 text = text,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -453,12 +462,16 @@ private fun ScanButton(
             if (isScanning){
                 Text(
                     text = stringResource(R.string.feature_radar_scanning),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }else{
                 Text(
                     text = stringResource(R.string.feature_radar_start_scan),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
