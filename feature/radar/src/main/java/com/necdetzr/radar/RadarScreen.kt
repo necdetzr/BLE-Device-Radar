@@ -323,7 +323,7 @@ private fun SaveScanButton(
     enabled:Boolean,
     modifier: Modifier = Modifier
 ) {
-    val text = if(enabled) stringResource(R.string.feature_radar_save_scan) else "Saved!"
+    val text = if(enabled) stringResource(R.string.feature_radar_save_scan) else stringResource(R.string.feature_radar_saved)
     Button(
         onClick = onClick,
         enabled = enabled,
@@ -372,12 +372,12 @@ private fun SaveAlertDialog(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text= "Save Scan",
+                        text= stringResource(R.string.feature_radar_save_scan),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Give this scan a name so you can find it later.",
+                        text = stringResource(R.string.feature_radar_save_scan_desc),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -386,11 +386,11 @@ private fun SaveAlertDialog(
                         onValueChange = {name = it},
                         maxLines = 1,
                         singleLine = true,
-                        label = {Text("Name")},
+                        label = {Text(stringResource(R.string.feature_radar_name))},
                         shape = RoundedCornerShape(12.dp)
                     )
                     Text(
-                        text = "e.g. Office Building A",
+                        text = stringResource(R.string.feature_radar_save_example),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -404,7 +404,7 @@ private fun SaveAlertDialog(
                             onClick = {onDismissRequest()},
 
                         ) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.feature_radar_cancel))
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
@@ -415,7 +415,7 @@ private fun SaveAlertDialog(
                                 contentColor = MaterialTheme.colorScheme.surface
                             )
                         ) {
-                            Text("Save")
+                            Text(stringResource(R.string.feature_radar_save))
                         }
 
                     }

@@ -17,4 +17,10 @@
     <string name="feature_radar_completed">Scan is completed</string>
     <string name="feature_radar_devices_found">%1$d devices found</string>
     <string name="feature_radar_save_scan">Save Scan</string>
+    <string name="feature_radar_save_scan_desc">Give this scan a name so you can find it later.</string>
+    <string name="feature_radar_saved">Saved!</string>
+    <string name="feature_radar_name">Name</string>
+    <string name="feature_radar_save_example">e.g. Office Building A</string>
+    <string name="feature_radar_cancel">Cancel</string>
+    <string name="feature_radar_save">Save</string>
 </resources>

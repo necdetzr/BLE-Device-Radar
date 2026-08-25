@@ -56,14 +56,17 @@ object BleAssignedNumbersMapper {
         return "$name ($hex)"
     }
 
-    fun getCompanyName(companyId: Int): String {
+    fun getCompanyName(
+        companyId: Int,
+        unknownText:String,
+    ): String {
         val hex = formatHex(companyId)
         val name = knownCompanies[companyId]
 
         return if (name != null) {
             "$name ($hex)"
         } else {
-            "Unknown ($hex)"
+            "$unknownText ($hex)"
         }
     }
 

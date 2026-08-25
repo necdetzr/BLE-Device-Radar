@@ -30,6 +30,12 @@
     <string name="core_ui_milliseconds">%1$.2f ms</string>
     <string name="core_ui_not_available">N/A</string>
     <string name="core_ui_payload">Payload: %1$s</string>
+    <string name="core_ui_dbm_value">%1$d dBm</string>
+    <string name="core_ui_dbm_unit">dBm</string>
+    <string name="core_ui_clipboard_mac_address_label">BLE MAC address</string>
+    <string name="core_ui_service_data_value">Data: %1$s</string>
+    <string name="core_ui_bluetooth_version_5_plus">BT 5.0+</string>
+    <string name="core_ui_unknown_value">Unknown (%1$s)</string>
 
 
 

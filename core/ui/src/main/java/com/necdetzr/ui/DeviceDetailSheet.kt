@@ -86,6 +86,9 @@ fun DeviceDetailSheetContent(
     val coroutineScope = rememberCoroutineScope()
     var copied by remember{ mutableStateOf(false)}
     val scrollState = rememberScrollState()
+    val clipboardLabel = stringResource(
+        R.string.core_ui_clipboard_mac_address_label,
+    )
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -118,7 +121,11 @@ fun DeviceDetailSheetContent(
                 device = bleDevice,
                 onCopyClick = {
                     coroutineScope.launch {
-                        val clipData = ClipData.newPlainText("BLE Mac address", bleDevice.macAddress )
+
+                        val clipData = ClipData.newPlainText(
+                            clipboardLabel,
+                            bleDevice.macAddress,
+                        )
                         val clipEntry = ClipEntry(clipData)
                         clipBoardManager.setClipEntry(clipEntry)
                         copied = true
@@ -150,6 +157,7 @@ fun DeviceDetailSheetContent(
 private fun DetailedInfoSection(
     bleDevice: ScannedBleDevice
 ){
+
     DeviceOtherInfoCard {
         DeviceOtherInfoRow(
             title = stringResource(R.string.core_ui_advertised_services),
@@ -198,7 +206,7 @@ private fun DetailedInfoSection(
                 bleDevice.advertisement.manufacturerData.forEach { data ->
                     Column(modifier = Modifier.padding(vertical = 4.dp)) {
                         Text(
-                            text = BleAssignedNumbersMapper.getCompanyName(data.companyId),
+                            text = BleAssignedNumbersMapper.getCompanyName(data.companyId,stringResource(R.string.core_ui_unknown)),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -228,6 +236,9 @@ private fun DetailedInfoSection(
                 )
             } else {
                 bleDevice.advertisement.serviceData.forEach { service ->
+                    val payload = service.payload.joinToString(" ") {
+                        String.format("%02X", it)
+                    }
                     Column(modifier = Modifier.padding(vertical = 4.dp)) {
                         SelectionContainer {
                             Column{
@@ -238,7 +249,10 @@ private fun DetailedInfoSection(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = "Data: ${service.payload.joinToString(" ") { String.format("%02X", it) }}",
+                                    text = stringResource(
+                                        R.string.core_ui_service_data_value,
+                                        payload,
+                                    ),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -266,7 +280,7 @@ private fun DetailedInfoSection(
         }
         DeviceOtherInfoRow(
             title = stringResource(R.string.core_ui_extended_advertising),
-            value = "BT 5.0+",
+            value = stringResource(R.string.core_ui_bluetooth_version_5_plus),
             icon = BleIcons.Info,
             showDivider = false
         ) {
@@ -280,7 +294,7 @@ private fun DetailedInfoSection(
                     }
                     ?: stringResource(R.string.core_ui_not_available)
             Text(
-                text = stringResource(R.string.core_ui_sid,bleDevice.advertisement.advertisingSid ?: "N/A"),
+                text = stringResource(R.string.core_ui_sid,bleDevice.advertisement.advertisingSid ?:stringResource(R.string.core_ui_not_available)),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -361,7 +375,12 @@ private fun DeviceInfoGrid(device: ScannedBleDevice) {
             InfoCard(
                 modifier = Modifier.weight(1f),
                 title = stringResource(R.string.core_ui_tx_power),
-                value = "${device.advertisement.txPower ?: "N/A"} dBm",
+                value = device.advertisement.txPower?.let { txPower ->
+                    stringResource(
+                        R.string.core_ui_dbm_value,
+                        txPower,
+                    )
+                } ?: stringResource(R.string.core_ui_not_available),
                 icon = BleIcons.Energy
             )
             InfoCard(
@@ -570,7 +589,7 @@ private fun RssiCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "dBm",
+                        text = stringResource(R.string.core_ui_dbm_unit),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 6.dp)
