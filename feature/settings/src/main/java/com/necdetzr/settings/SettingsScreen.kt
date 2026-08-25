@@ -45,6 +45,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -239,10 +241,11 @@ private fun ScanPeriodSection(
         Spacer(Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             periods.forEach { period->
                 PeriodSubSection(
+                    modifier = Modifier.weight(1f),
                     period = period,
                     onClick = onPeriodClick,
                     isSelected = period == currentPeriod
@@ -253,6 +256,7 @@ private fun ScanPeriodSection(
 }
 @Composable
 private fun PeriodSubSection(
+    modifier: Modifier = Modifier,
     onClick: (Long) -> Unit,
     period:Long,
     isSelected: Boolean
@@ -261,8 +265,7 @@ private fun PeriodSubSection(
     val color = if(isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .padding(4.dp)
+        modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 onClick = { onClick(period) }
@@ -276,7 +279,6 @@ private fun PeriodSubSection(
                 color = backColor.copy(0.4f)
             )
             .padding(8.dp)
-            .width(60.dp)
     ){
         Text(
             text = stringResource(
@@ -315,11 +317,12 @@ private fun ThemeSection(
             .padding(16.dp)
     ){
         Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             themes.forEach { (theme,string, vector) ->
                 ThemeSubSection(
+                    modifier = Modifier.weight(1f),
                     icon = vector,
                     text = string,
                     isSelected = theme == currentTheme,
@@ -343,7 +346,6 @@ private fun ThemeSubSection(
     val color = if(isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
     Box(
         modifier = modifier
-            .padding(4.dp)
             .clip(
                 RoundedCornerShape(12.dp)
             )
@@ -361,10 +363,7 @@ private fun ThemeSubSection(
                 shape = RoundedCornerShape(12.dp)
 
             )
-
-            .padding(12.dp)
-            .width(60.dp)
-        ,
+            .padding(12.dp),
         contentAlignment = Alignment.Center,
     ){
         Column(
@@ -379,7 +378,10 @@ private fun ThemeSubSection(
             Text(
                 text = text,
                 color = color,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
