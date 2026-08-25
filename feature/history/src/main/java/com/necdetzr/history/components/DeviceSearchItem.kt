@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -73,12 +74,13 @@ fun DeviceSearchItem(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(
-                onClick = { onExpandClick(device.macAddress) }
-            )
             .padding(
                 horizontal = 12.dp,
                 vertical = 4.dp,
+            )
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(
+                onClick = { onExpandClick(device.macAddress) }
             ),
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surface,
