@@ -3,7 +3,6 @@ package com.necdetzr.radar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.necdetzr.common.result.Result
 import com.necdetzr.data.repository.BleRadarRepository
 import com.necdetzr.data.repository.ScanHistoryRepository
 import com.necdetzr.data.repository.UserDataRepository
@@ -92,20 +91,9 @@ class RadarViewModel @Inject constructor(
                             scanFailed = true
                             _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
                         }
-                        .collect { result->
-                            when(result){
-                                is Result.Success -> {
-                                    val newDevice = result.data
-                                    scannedDevices.updateScannedDevice(newDevice)
-                                    _uiState.update { it.copy(feedState = DeviceFeedUiState.Scanning(sortedDevices(currentRssi))) }
-                                }
-                                is Result.Error -> {
-                                    scanFailed = true
-                                    _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
+                        .collect { device->
+                            scannedDevices.updateScannedDevice(device)
 
-                                }
-                                is Result.Loading -> Unit
-                            }
                         }
                 }
                 if(!scanFailed){

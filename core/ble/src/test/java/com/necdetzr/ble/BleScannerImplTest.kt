@@ -2,13 +2,13 @@ package com.necdetzr.ble
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import com.necdetzr.ble.data.BleScannerImpl
-import com.necdetzr.ble.domain.model.BleDevice
-import com.necdetzr.common.result.Result
+import com.necdetzr.model.ScannedBleDevice
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
@@ -18,7 +18,6 @@ import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -30,19 +29,21 @@ import org.junit.Test
 class BleScannerImplTest {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
+    private lateinit var bluetoothManager: BluetoothManager
     private lateinit var bleScannerImpl: BleScannerImpl
     private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setup(){
         bluetoothAdapter = mockk()
+        bluetoothManager = mockk()
         bluetoothLeScanner = mockk(relaxed = true)
         every {bluetoothAdapter.bluetoothLeScanner} returns bluetoothLeScanner
         val mockBuilder = mockk<ScanSettings.Builder>()
         mockkConstructor(ScanSettings.Builder::class)
         every{anyConstructed<ScanSettings.Builder>().setScanMode(any())} returns mockBuilder
         every { mockBuilder.build() } returns mockk<ScanSettings>()
-        bleScannerImpl = BleScannerImpl(bluetoothAdapter,testDispatcher)
+        bleScannerImpl = BleScannerImpl(bluetoothManager =bluetoothManager ,testDispatcher)
     }
 
     @Test
@@ -64,19 +65,19 @@ class BleScannerImplTest {
             every{device} returns mockDevice
             every{rssi} returns -65
         }
-        var capturedResult : Result.Success<BleDevice>? = null
+        var device : ScannedBleDevice? = null
 
         val job = launch {
             val result = bleScannerImpl.startScanning().first()
-            capturedResult = result as Result.Success
+            device = result
         }
         runCurrent()
         scanCallbackSlot.captured.onScanResult(1,mockScanResult)
         runCurrent()
 
-        assertEquals("Mock Device",capturedResult?.data?.name)
-        assertEquals("AA:BB:CC:DD:EE:FF",capturedResult?.data?.macAddress)
-        assertEquals(-65,capturedResult?.data?.rssi)
+        assertEquals("Mock Device",device?.name)
+        assertEquals("AA:BB:CC:DD:EE:FF",device?.macAddress)
+        assertEquals(-65,device?.rssi)
 
         job.cancel()
     }
