@@ -7,8 +7,7 @@ import com.necdetzr.model.ScannedBleDevice
 
 data class HistorySearchViewState(
     val query:String = "",
-    val scanResults: List<ScanRecord> = emptyList(),
-    val deviceResults: List<DeviceSearchResult> = emptyList(),
+    val contentState: HistorySearchContentState = HistorySearchContentState.Loading,
     val selectedCategory: SearchCategory = SearchCategory.ALL,
     val expandedDeviceMac: String? = null,
     val selectedScanId: Long? = null,
@@ -16,3 +15,16 @@ data class HistorySearchViewState(
     val selectedDevice: ScannedBleDevice? = null,
     val expandedDeviceScans: List<ScanRecord> = emptyList(),
 )
+sealed interface HistorySearchContentState {
+
+    data object Loading : HistorySearchContentState
+
+    data object Empty : HistorySearchContentState
+
+    data class Success(
+        val scans: List<ScanRecord>,
+        val devices: List<DeviceSearchResult>
+    ) : HistorySearchContentState
+
+    data object Error : HistorySearchContentState
+}

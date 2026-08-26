@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.necdetzr.data.repository.ScanHistoryRepository
 import com.necdetzr.history.R
+import com.necdetzr.model.DeviceSearchResult
 import com.necdetzr.model.ScanRecord
 import com.necdetzr.model.ScanRecordDetail
 import com.necdetzr.model.ScannedBleDevice
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -42,6 +45,7 @@ class HistorySearchViewModel @Inject constructor(
     private var deviceScansLoadJob: Job? = null
     private val _sheetState = MutableStateFlow(SheetState())
     private var scanLoadJob: Job? = null
+
     @OptIn(FlowPreview::class)
     private val normalizedQuery =
         _query
@@ -83,27 +87,38 @@ class HistorySearchViewModel @Inject constructor(
                 )
             }
         }
-    private val searchResults =
+    private val contentState =
         combine(
             scanResults,
             deviceResults,
-        ) { scans, devices ->
-            scans to devices
+            _selectedCategory
+        ) { scans, devices, category ->
+            createContentState(
+                scans = scans,
+                devices = devices,
+                category = category
+            )
         }
+            .onStart {
+                emit(HistorySearchContentState.Loading)
+            }
+            .catch {
+                emit(HistorySearchContentState.Error)
+            }
+
     val uiState : StateFlow<HistorySearchViewState> =
         combine(
             _query,
-            searchResults,
+            contentState,
             _selectedCategory,
             _expandedDeviceState,
             _sheetState,
-            ){query,results,category,expandedDeviceState,sheetState->
-            val (scans, devices) = results
+            ){query,contentState,category,expandedDeviceState,sheetState->
+
 
             HistorySearchViewState(
                 query = query,
-                scanResults = scans,
-                deviceResults = devices,
+                contentState = contentState,
                 selectedCategory = category,
                 expandedDeviceMac = expandedDeviceState.macAddress,
                 selectedScan = sheetState.selectedScan,
@@ -116,6 +131,7 @@ class HistorySearchViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = HistorySearchViewState()
         )
+
 
 
 
@@ -200,3 +216,28 @@ private data class ExpandedDeviceState(
     val macAddress: String? = null,
     val scans: List<ScanRecord> = emptyList(),
 )
+private fun createContentState(
+    scans: List<ScanRecord>,
+    devices: List<DeviceSearchResult>,
+    category: SearchCategory
+): HistorySearchContentState {
+    val isEmpty = when (category) {
+        SearchCategory.ALL ->
+            scans.isEmpty() && devices.isEmpty()
+
+        SearchCategory.SCAN ->
+            scans.isEmpty()
+
+        SearchCategory.DEVICE ->
+            devices.isEmpty()
+    }
+
+    return if (isEmpty) {
+        HistorySearchContentState.Empty
+    } else {
+        HistorySearchContentState.Success(
+            scans = scans,
+            devices = devices
+        )
+    }
+}
