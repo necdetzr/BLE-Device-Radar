@@ -9,7 +9,6 @@ import com.necdetzr.ble.domain.BleScanner
 import com.necdetzr.ble.mapper.toScannedBleDevice
 import com.necdetzr.common.network.BleDispatchers
 import com.necdetzr.common.network.Dispatcher
-import com.necdetzr.common.result.Result
 import com.necdetzr.model.ScannedBleDevice
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
@@ -27,7 +26,7 @@ class BleScannerImpl @Inject constructor(
 
 
     @SuppressLint("MissingPermission")
-    override fun startScanning(): Flow<Result<ScannedBleDevice>> = callbackFlow{
+    override fun startScanning(): Flow<ScannedBleDevice> = callbackFlow{
         val adapter = bluetoothManager.adapter
         if(adapter == null){
             close(Exception("Bluetooth is not supported."))
@@ -49,7 +48,7 @@ class BleScannerImpl @Inject constructor(
             override fun onScanResult(callbackType:Int,result: ScanResult?){
                 result?.let {scanResult->
                     val device = scanResult.toScannedBleDevice()
-                    trySend(Result.Success(device))
+                    trySend(device)
 
                 }
             }
