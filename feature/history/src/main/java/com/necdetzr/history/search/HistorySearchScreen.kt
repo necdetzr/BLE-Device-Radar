@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -30,6 +31,7 @@ import com.necdetzr.designsystem.icons.BleIcons
 import com.necdetzr.history.R
 import com.necdetzr.history.components.DeviceSearchItem
 import com.necdetzr.history.components.HistorySearchField
+import com.necdetzr.history.components.HistorySearchMessage
 import com.necdetzr.history.components.ScanRecordCard
 import com.necdetzr.history.components.ScanRecordSheet
 import com.necdetzr.model.DeviceSearchResult
@@ -49,12 +51,11 @@ fun HistorySearchScreen(
         onQueryChange = viewModel::onQueryChange,
         onCategoryClick = viewModel::onCategoryClick,
         selectedCategory = uiState.selectedCategory,
-        scanResults = uiState.scanResults,
         onScanClick = viewModel::onScanClick,
         onDeviceExpandClick = viewModel::onDeviceExpandClick,
         expandedDeviceMac = uiState.expandedDeviceMac,
-        devices = uiState.deviceResults,
         expandedDeviceScans = uiState.expandedDeviceScans,
+        contentState = uiState.contentState
     )
     uiState.selectedScan?.let {scan->
         ScanRecordSheet(
@@ -76,12 +77,11 @@ internal fun HistorySearchScreen(
     onBackButton: () -> Unit,
     onCategoryClick: (SearchCategory) -> Unit,
     onQueryChange:(String)->Unit,
-    scanResults:List<ScanRecord>,
     onScanClick: (Long) -> Unit,
     onDeviceExpandClick: (String) -> Unit,
     expandedDeviceMac:String?,
-    devices:List<DeviceSearchResult>,
     expandedDeviceScans: List<ScanRecord>,
+    contentState: HistorySearchContentState
 ){
     Scaffold(
         modifier = modifier,
@@ -109,8 +109,7 @@ internal fun HistorySearchScreen(
             SearchResult(
                 modifier = Modifier.weight(1f),
                 selectedCategory = selectedCategory,
-                scans = scanResults,
-                devices = devices,
+                contentState = contentState,
                 onScanClick = onScanClick,
                 onDeviceExpandClick = onDeviceExpandClick,
                 expandedDeviceMac = expandedDeviceMac,
@@ -118,7 +117,6 @@ internal fun HistorySearchScreen(
             )
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -186,43 +184,60 @@ private fun CategorySection(
 private fun SearchResult(
     modifier: Modifier = Modifier,
     selectedCategory: SearchCategory,
-    scans: List<ScanRecord>,
-    devices: List<DeviceSearchResult>,
     onScanClick: (Long) -> Unit,
     onDeviceExpandClick: (String) -> Unit,
     expandedDeviceMac: String?,
-    expandedDeviceScans: List<ScanRecord>
-){
-    LazyColumn(
-        modifier = modifier.fillMaxWidth(),
+    expandedDeviceScans: List<ScanRecord>,
+    contentState: HistorySearchContentState
+) {
+    when (contentState) {
+        HistorySearchContentState.Loading -> {
+            HistorySearchLoading()
+        }
 
-    ) {
-
-        if (
-            selectedCategory == SearchCategory.ALL ||
-            selectedCategory == SearchCategory.SCAN
-        ) {
-            scanSection(
-                scans = scans,
-                onScanClick = onScanClick
+        HistorySearchContentState.Empty -> {
+            HistorySearchEmpty(
+                title = stringResource(
+                    R.string.feature_history_search_empty_title
+                ),
+                description = stringResource(
+                    R.string.feature_history_search_empty_description
+                )
             )
         }
 
-        if (
-            selectedCategory == SearchCategory.ALL ||
-            selectedCategory == SearchCategory.DEVICE
-        ) {
-            deviceSection(
-                devices = devices,
-                expandedDeviceMac = expandedDeviceMac,
-                onDeviceExpandClick = onDeviceExpandClick,
-                onScanClick = onScanClick,
-                expandedDeviceScans = expandedDeviceScans
-            )
+        HistorySearchContentState.Error -> {
+            HistorySearchError()
+        }
+
+        is HistorySearchContentState.Success -> {
+            LazyColumn(
+                modifier = modifier.fillMaxWidth()
+            ) {
+                if (
+                    contentState.scans.isNotEmpty() && (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.SCAN)
+                ) {
+                    scanSection(
+                        scans = contentState.scans,
+                        onScanClick = onScanClick
+                    )
+                }
+
+                if (
+                    contentState.devices.isNotEmpty() && (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.DEVICE)
+                ) {
+                    deviceSection(
+                        devices = contentState.devices,
+                        expandedDeviceMac = expandedDeviceMac,
+                        onDeviceExpandClick = onDeviceExpandClick,
+                        onScanClick = onScanClick,
+                        expandedDeviceScans = expandedDeviceScans
+                    )
+                }
+            }
         }
     }
 }
-
 private fun LazyListScope.scanSection(
     scans:List<ScanRecord>,
     onScanClick:(Long)->Unit
@@ -246,6 +261,37 @@ private fun LazyListScope.scanSection(
         )
     }
 }
+@Composable
+private fun HistorySearchEmpty(
+    title: String,
+    description: String
+) {
+    HistorySearchMessage(
+        icon = BleIcons.Warning,
+        title = title,
+        description = description
+    )
+}
+
+@Composable
+private fun HistorySearchLoading() {
+    LinearProgressIndicator(
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun HistorySearchError() {
+    HistorySearchMessage(
+        icon = BleIcons.Error,
+        title = stringResource(
+            R.string.feature_history_search_error_title
+        ),
+        description = stringResource(
+            R.string.feature_history_search_error_description
+        )
+    )
+}
 
 private fun LazyListScope.deviceSection(
     devices:List<DeviceSearchResult>,
@@ -262,6 +308,7 @@ private fun LazyListScope.deviceSection(
             color = MaterialTheme.colorScheme.onSurface
         )
     }
+
     items(
         items = devices,
         key = {it.device.macAddress}

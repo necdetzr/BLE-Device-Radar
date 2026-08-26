@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Factory
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.History
@@ -75,4 +76,6 @@ object BleIcons {
     val Save = Icons.Default.Save
     val Back = Icons.AutoMirrored.Filled.ArrowBack
     val Scan = Icons.Default.Sensors
+    val Error = Icons.Default.Error
+    val Empty = Icons.Default.Inbox
 }

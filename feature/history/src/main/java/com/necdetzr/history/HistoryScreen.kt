@@ -1,9 +1,6 @@
 package com.necdetzr.history
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,9 +13,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -37,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.necdetzr.designsystem.icons.BleIcons
+import com.necdetzr.history.components.HistorySearchMessage
 import com.necdetzr.history.components.HistorySearchPlaceholder
 import com.necdetzr.history.components.ScanRecordCard
 import com.necdetzr.history.components.ScanRecordSheet
@@ -241,21 +236,31 @@ private fun RecentSection(
             tonalElevation = 1.dp
         ) {
             LazyColumn(
-
+                modifier = Modifier.weight(1f)
             ) {
-                items(
-                    items = recentScans,
-                    key = {it.scanId},
+                if(recentScans.isEmpty()){
+                    item{
+                        HistorySearchMessage(
+                            icon = BleIcons.Warning,
+                            title = stringResource(R.string.feature_history_search_empty_title),
+                            description = stringResource(R.string.feature_history_search_empty_description)
+                        )
+                    }
+                }else{
+                    items(
+                        items = recentScans,
+                        key = {it.scanId},
+                        ){
+                        ScanRecordCard(
+                            icon = BleIcons.Bluetooth,
+                            scanRecord = it,
+                            isLast = it == recentScans.last(),
+                            onScanClick = onScanClick
+                        )
 
-                ){
-                    ScanRecordCard(
-                        icon = BleIcons.Bluetooth,
-                        scanRecord = it,
-                        isLast = it == recentScans.last(),
-                        onScanClick = onScanClick
-                    )
-
+                    }
                 }
+
             }
 
 
