@@ -59,4 +59,10 @@
 
     <string name="feature_history_no_value">-</string>
     <string name="feature_history_no_scans_saved">No scans saved</string>
+    <string name="feature_history_search_empty_title">No results found</string>
+    <string name="feature_history_search_empty_description">Try using a different device name, MAC address, or scan name.</string>
+
+    <string name="feature_history_search_error_title">Something went wrong</string>
+    <string name="feature_history_search_error_description">Search results could not be loaded. Please try again.</string>
+    <string name="feature_history_search_retry">Retry</string>
 </resources>
