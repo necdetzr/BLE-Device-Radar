@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.bledeviceradar.android.feature)
     alias(libs.plugins.bledeviceradar.android.library.compose)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.bledeviceradar.hilt)
 }
 
 android {
@@ -10,19 +9,11 @@ android {
 }
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.navigation3.runtime)
-    implementation("androidx.compose.animation:animation:1.11.4")
+    implementation(libs.androidx.compose.animation)
     implementation(project(":core:navigation"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
     implementation(project(":core:model"))
     implementation(project(":core:data"))
-    implementation(project(":core:common"))
     implementation(libs.androidx.activity.compose)
-
-
-    implementation(libs.androidx.compose.material3)
-
-
 }
