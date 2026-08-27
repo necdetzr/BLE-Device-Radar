@@ -93,7 +93,13 @@ class RadarViewModel @Inject constructor(
                         }
                         .collect { device->
                             scannedDevices.updateScannedDevice(device)
-
+                            _uiState.update { currentState ->
+                                currentState.copy(
+                                    feedState = DeviceFeedUiState.Scanning(
+                                        devices = sortedDevices(currentRssi)
+                                    )
+                                )
+                            }
                         }
                 }
                 if(!scanFailed){
