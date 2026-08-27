@@ -10,7 +10,6 @@ data class HistorySearchViewState(
     val contentState: HistorySearchContentState = HistorySearchContentState.Loading,
     val selectedCategory: SearchCategory = SearchCategory.ALL,
     val expandedDeviceMac: String? = null,
-    val selectedScanId: Long? = null,
     val selectedScan: ScanRecordDetail? = null,
     val selectedDevice: ScannedBleDevice? = null,
     val expandedDeviceScans: List<ScanRecord> = emptyList(),

@@ -34,12 +34,8 @@ sealed interface MainActivityUiState{
                 ThemeConfig.LIGHT -> false
                 ThemeConfig.FOLLOW_SYSTEM -> isSystemDarkTheme
             }
-        override val rssiThreshold: Long = userPreferences.scanPeriod
 
     }
     fun shouldUseDarkTheme(isSystemDarkTheme: Boolean) = isSystemDarkTheme
     fun shouldKeepSplashScreen() = this is Loading
-    val rssiThreshold: Long get() = -100
-
-
 }
