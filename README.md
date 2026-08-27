@@ -1,54 +1,211 @@
-# BLE-Device-Radar
-BLE Device Radar Repository
-![CI Status](https://img.shields.io/badge/CI-Passing-brightgreen?style=flat-square&logo=githubactions)
-![Detekt](https://img.shields.io/badge/Detekt-Linted-blue?style=flat-square&logo=kotlin)
-![Min SDK](https://img.shields.io/badge/Min%20SDK-31%20(Android%2012)-orange?style=flat-square&logo=android)
-![Tech Stack](https://img.shields.io/badge/Tech-Compose%20%7C%20Coroutines%20%7C%20Hilt-cyan?style=flat-square)
+# BLE Device Radar
 
-BLE Device Radar is a modern, professional-grade Android application designed to scan, visualize, and interact with Bluetooth Low Energy (BLE) devices in real-time. Built with a heavy focus on architectural purity, this project serves as a showcase for state-of-the-art Android development practices.
+[![CI Pipeline](https://github.com/necdetzr/BLE-Device-Radar/actions/workflows/ci.yml/badge.svg)](https://github.com/necdetzr/BLE-Device-Radar/actions/workflows/ci.yml)
 
-## ✨ Features
-* **Real-time BLE Scanning:** Modern and clean Bluetooth permission handling (API 31+).
-* **Custom UI Components:** A fully custom, neon-themed dynamic Radar view built entirely with **Jetpack Compose Canvas**.
-* **Reactive State Management:** Unidirectional Data Flow (UDF) utilizing MVI architecture.
-* **Strict Code Quality:** Enforced Detekt rules and a fully automated GitHub Actions CI pipeline.
+BLE Device Radar is an Android application for discovering nearby Bluetooth Low Energy devices, inspecting their advertising data, and saving scans for later review.
 
-## 🏗️ Architecture & Tech Stack
+The project is built with Kotlin and Jetpack Compose using a modular, layered architecture inspired by the official Now in Android project.
 
-This project strictly adheres to the **Clean Architecture** principles and a highly scalable **Multi-Module** structure, heavily inspired by the official *Now in Android* repository.
+## Features
 
-### 🛠️ Core Technologies
-* **UI:** Jetpack Compose, Material 3, Custom Canvas.
-* **Architecture:** MVI (Model-View-Intent), ViewModel, UDF.
-* **Concurrency:** Kotlin Coroutines & Flows (StateFlow/SharedFlow).
-* **Dependency Injection:** Dagger Hilt.
-* **Build System:** Gradle Kotlin DSL (`build.gradle.kts`), Version Catalogs (`libs.versions.toml`), Convention Plugins.
-* **Static Analysis:** Detekt.
+### BLE radar
 
-### 📦 Module Structure
-The app is heavily modularized to ensure fast build times, strict visibility control, and high reusability:
+- Scan nearby Bluetooth Low Energy devices in real time.
+- Display device name, MAC address, RSSI and observed packet count.
+- Inspect advertised services, manufacturer data, service data and raw advertising packets.
+- Handle unsupported Bluetooth hardware, disabled Bluetooth, denied permissions and scan failures.
+- Configure the scan duration and RSSI threshold.
+- Save completed scans with a custom name.
 
-* `:app` - The main application module bringing everything together.
-* `:feature:scanner` - Contains the UI and presentation logic for the BLE scanning screen.
-* `:core:ble` - Encapsulates all Bluetooth Low Energy logic, scanning, and byte-array parsing.
-* `:core:designsystem` - Centralized theme, typography, colors (Neon Cyan), and custom Compose components (Dimensions, Icons).
+### Scan history
 
-## 🚀 Getting Started
+- Store scans and discovered devices locally with Room.
+- View recent scans and total scan count.
+- Open saved scans and inspect their devices.
+- Search scans by name.
+- Search devices by name or MAC address.
+- See which saved scans contained a particular device.
+- Delete individual scans or clear the entire scan history.
 
-### Prerequisites
-* Android Studio (Latest version recommended)
-* JDK 17
-* A physical Android device running Android 12 (API 31) or higher for testing BLE features (Emulators do not support BLE scanning).
+### Settings
 
-### Installation
-1. Clone the repository: git clone https://github.com/necdetzr/BLE-Device-Radar.git
-2. Open the project in Android Studio.
-3. Sync the project with Gradle files.
-4. Build and run the :app module on your physical device.
+- Choose light, dark or system theme.
+- Configure scan duration.
+- Configure RSSI filtering.
+- View application version information.
+- Permanently delete locally saved scan history.
 
-### Screenshots
-Note: Screenshots and GIFs of the custom Canvas radar will be added here as the UI development progresses.
+### Privacy
 
-### License
-This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
+BLE observations, including device addresses and advertising data, are stored locally on the device.
 
+The scan-history database is excluded from Android cloud backup and device transfer. Users can delete all saved scan data from the Settings screen.
+
+## Architecture
+
+The project uses a modular, layered architecture with unidirectional state flow:
+
+```text
+Compose UI
+    ↓ events
+ViewModel
+    ↓
+Repository interfaces
+    ↓
+DataStore / Room / Android BLE APIs
+```
+
+ViewModels expose immutable `StateFlow` UI state. UI events are passed back to ViewModels through explicit callbacks.
+
+The project does not introduce use cases solely to satisfy an architectural template. Business rules can be moved into dedicated use cases when they become complex enough to justify them.
+
+## Tech stack
+
+- Kotlin
+- Jetpack Compose
+- Material 3
+- Compose Canvas
+- Android Navigation 3
+- Kotlin Coroutines and Flow
+- Dagger Hilt
+- Room
+- Preferences DataStore
+- Kotlin Serialization
+- Gradle Kotlin DSL
+- Version Catalogs
+- Convention Plugins
+- Detekt
+- GitHub Actions
+
+## Module structure
+
+```text
+BLE-Device-Radar
+├── app
+├── build-logic
+├── feature
+│   ├── radar
+│   ├── history
+│   └── settings
+└── core
+    ├── ble
+    ├── common
+    ├── data
+    ├── database
+    ├── datastore
+    ├── designsystem
+    ├── model
+    ├── navigation
+    └── ui
+```
+
+### Application
+
+- `:app`  
+  Application entry point, root navigation and top-level UI composition.
+
+### Feature modules
+
+- `:feature:radar`  
+  BLE scan presentation, radar visualization, device list and scan-saving flow.
+
+- `:feature:history`  
+  Saved scan history, scan details, device history and search.
+
+- `:feature:settings`  
+  Scanner preferences, appearance settings, application information and local-data deletion.
+
+### Core modules
+
+- `:core:ble`  
+  Android BLE scanner integration and `ScanResult` mapping.
+
+- `:core:common`  
+  Shared coroutine dispatchers and application coroutine scopes.
+
+- `:core:data`  
+  Repository contracts, implementations and data mappers.
+
+- `:core:database`  
+  Room database, entities, relations, queries and migrations.
+
+- `:core:datastore`  
+  Preferences DataStore configuration and user preference persistence.
+
+- `:core:designsystem`  
+  Theme, typography, dimensions, icons and shared navigation components.
+
+- `:core:model`  
+  Shared application models.
+
+- `:core:navigation`  
+  Navigation 3 state and navigation contracts.
+
+- `:core:ui`  
+  Reusable device cards, device feeds and detail components.
+
+### Build logic
+
+- `:build-logic`  
+  Convention plugins used to share Android, Compose, Hilt, Room and JVM build configuration.
+
+## Requirements
+
+- Android Studio with JDK 17
+- Android SDK 36
+- Android 12 or newer (API 31+)
+- A physical Android device with Bluetooth Low Energy support
+
+A physical device is recommended because Android emulators generally cannot perform real nearby BLE scans.
+
+## Getting started
+
+Clone the repository:
+
+```bash
+git clone https://github.com/necdetzr/BLE-Device-Radar.git
+cd BLE-Device-Radar
+```
+
+Open the project in Android Studio, sync Gradle, and run the `app` configuration on a compatible physical device.
+
+When prompted, grant the Nearby devices permissions required for BLE scanning.
+
+## Build and code quality
+
+Build the debug application:
+
+```bash
+./gradlew assembleDebug
+```
+
+Run static analysis:
+
+```bash
+./gradlew detekt
+```
+
+On Windows:
+
+```powershell
+.\gradlew.bat assembleDebug
+.\gradlew.bat detekt
+```
+
+The GitHub Actions CI workflow runs Detekt and builds the debug application for pushes and pull requests targeting `main`.
+
+## Screenshots
+
+Screenshots and a short radar demonstration will be added before the first public release.
+
+Recommended screenshots:
+
+- Radar while scanning
+- Device detail sheet
+- Saved scan history
+- Device search
+- Settings
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE).
