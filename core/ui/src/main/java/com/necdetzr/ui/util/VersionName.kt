@@ -11,9 +11,11 @@ fun getAppVersionName(): String{
     return remember(context) {
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            packageInfo.versionName ?: "1.0.0"
-        } catch (e: PackageManager.NameNotFoundException) {
-            "1.0.0"
+            packageInfo.versionName ?: DEFAULTVERSIONNAME
+        } catch (_: PackageManager.NameNotFoundException) {
+            DEFAULTVERSIONNAME
         }
     }
 }
+
+private const val DEFAULTVERSIONNAME = "1.0.0"
