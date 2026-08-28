@@ -48,12 +48,13 @@ object BleAssignedNumbersMapper {
             ?: return uuidString
 
         val hex = formatHex(uuid)
+        val name = gattServices[uuid] ?: memberServices[uuid]
 
-        val name = gattServices[uuid]
-            ?: memberServices[uuid]
-            ?: return hex
-
-        return "$name ($hex)"
+        return if (name != null) {
+            "$name ($hex)"
+        } else {
+            hex
+        }
     }
 
     fun getCompanyName(
@@ -78,17 +79,17 @@ object BleAssignedNumbersMapper {
             .lowercase()
 
         return when {
-            cleanUuid.length == 4 -> {
-                cleanUuid.toIntOrNull(radix = 16)
+            cleanUuid.length == SHORT_UUID_HEX_LENGTH -> {
+                cleanUuid.toIntOrNull(radix = HEX_RADIX)
             }
 
-            cleanUuid.length == 32 &&
-                    cleanUuid.startsWith("0000") &&
-                    cleanUuid.substring(8) == BLUETOOTH_BASE_UUID_SUFFIX -> {
+            cleanUuid.length == FULL_UUID_HEX_LENGTH &&
+                    cleanUuid.startsWith(BLUETOOTH_BASE_UUID_PREFIX) &&
+                    cleanUuid.substring(BASE_UUID_SUFFIX_START_INDEX) == BLUETOOTH_BASE_UUID_SUFFIX -> {
 
                 cleanUuid
-                    .substring(4, 8)
-                    .toIntOrNull(radix = 16)
+                    .substring(EMBEDDED_UUID_START_INDEX, EMBEDDED_UUID_END_INDEX)
+                    .toIntOrNull(radix = HEX_RADIX)
             }
 
             else -> null
@@ -99,6 +100,16 @@ object BleAssignedNumbersMapper {
         return "0x%04X".format(value)
     }
 
-    private const val BLUETOOTH_BASE_UUID_SUFFIX =
-        "00001000800000805f9b34fb"
+    private const val BLUETOOTH_BASE_UUID_SUFFIX = "00001000800000805f9b34fb"
+    private const val SHORT_UUID_HEX_LENGTH = 4
+    private const val FULL_UUID_HEX_LENGTH = 32
+
+    private const val EMBEDDED_UUID_START_INDEX = 4
+    private const val EMBEDDED_UUID_END_INDEX = 8
+    private const val BASE_UUID_SUFFIX_START_INDEX = 8
+
+    private const val HEX_RADIX = 16
+
+    private const val BLUETOOTH_BASE_UUID_PREFIX = "0000"
+
 }
