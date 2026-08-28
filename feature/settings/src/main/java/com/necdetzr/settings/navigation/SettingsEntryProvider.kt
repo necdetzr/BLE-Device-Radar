@@ -5,7 +5,7 @@ import androidx.navigation3.runtime.NavKey
 import com.necdetzr.navigation.Navigator
 import com.necdetzr.settings.SettingsScreen
 import com.necdetzr.settings.api.SettingsNavKey
-
+@Suppress("UnusedParameter")
 fun EntryProviderScope<NavKey>.settingsEntry(navigator: Navigator){
     entry<SettingsNavKey>{
         SettingsScreen(
