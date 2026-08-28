@@ -63,7 +63,6 @@ fun ScanRecordSheet(
                 onDeviceClick = onDeviceClick
             )
         }
-
     }
 }
 
@@ -71,13 +70,15 @@ fun ScanRecordSheet(
 fun ScanRecordSheetContent(
     scan: ScanRecord,
     devices: List<ScannedBleDevice>,
-    onDeviceClick: (ScannedBleDevice) -> Unit
+    onDeviceClick: (ScannedBleDevice) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
     ) {
         item {
-            Column{
+            Column {
                 Text(
                     text = scan.scanName,
                     style = MaterialTheme.typography.headlineMedium,
@@ -85,7 +86,6 @@ fun ScanRecordSheetContent(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.height(4.dp))
-
                 Text(
                     text = scan.timestamp.toReadableDateTime(),
                     style = MaterialTheme.typography.bodyMedium,
@@ -94,55 +94,66 @@ fun ScanRecordSheetContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-
         }
 
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ScanRecordDataCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(R.string.feature_history_devices),
-                    value = scan.deviceCount.toString()
-                )
-
-                ScanRecordDataCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(R.string.feature_history_packets),
-                    value = devices.sumOf { it.packetCount }.toString()
-                )
-
-                ScanRecordDataCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(R.string.feature_history_connectable),
-                    value = devices.count {
-                        it.advertisement.isConnectable == true
-                    }.toString()
-                )
-            }
+            ScanRecordSummary(
+                scan = scan,
+                devices = devices,
+            )
         }
 
         item {
             Text(
                 text = stringResource(R.string.feature_history_devices),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
         }
 
         items(
             items = devices,
-            key = { it.macAddress }
+            key = { it.macAddress },
         ) { device ->
             BleDeviceCard(
                 bleDevice = device,
                 onClick = {
                     onDeviceClick(device)
                 },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(8.dp),
             )
         }
+    }
+}
+@Composable
+private fun ScanRecordSummary(
+    scan: ScanRecord,
+    devices: List<ScannedBleDevice>,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        ScanRecordDataCard(
+            modifier = Modifier.weight(1f),
+            title = stringResource(R.string.feature_history_devices),
+            value = scan.deviceCount.toString(),
+        )
+
+        ScanRecordDataCard(
+            modifier = Modifier.weight(1f),
+            title = stringResource(R.string.feature_history_packets),
+            value = devices.sumOf { it.packetCount }.toString(),
+        )
+
+        ScanRecordDataCard(
+            modifier = Modifier.weight(1f),
+            title = stringResource(R.string.feature_history_connectable),
+            value = devices.count {
+                it.advertisement.isConnectable == true
+            }.toString(),
+        )
     }
 }
 @Composable

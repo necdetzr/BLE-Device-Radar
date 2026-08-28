@@ -1,3 +1,4 @@
+@file:Suppress("TooManyFunctions")
 package com.necdetzr.settings
 
 import androidx.compose.foundation.BorderStroke
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -145,75 +145,99 @@ private fun SettingsTitle(
 
 @Composable
 private fun ScanningSection(
-    onRssiChange : (Int) ->Unit,
+    onRssiChange: (Int) -> Unit,
     onPeriodClick: (Long) -> Unit,
     period: Long,
-    rssi:Int
-){
-    var displayRssi by remember(rssi) { mutableIntStateOf(rssi) }
+    rssi: Int,
+) {
+    var displayRssi by remember(rssi) {
+        mutableIntStateOf(rssi)
+    }
+
     SectionTitle(
         text = stringResource(R.string.feature_settings_scanning),
-        modifier = Modifier.padding(horizontal = 4.dp)
+        modifier = Modifier.padding(horizontal = 4.dp),
     )
+
     Spacer(Modifier.height(8.dp))
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .border(
                 width = 0.3.dp,
                 color = MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
             )
-            .padding(16.dp)
+            .padding(16.dp),
     ) {
         Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = stringResource(R.string.feature_settings_rssi_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = stringResource(R.string.feature_settings_rssi_text),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = stringResource(
-                            R.string.feature_settings_rssi_value,
-                            displayRssi,
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-            }
-            RssiThresholdFilter(
-                onRssiChange = onRssiChange,
-                onDrag = {value->
-                    displayRssi = value
-                },
-                rssi = rssi
+            RssiSettingHeader(
+                displayRssi = displayRssi,
             )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+            RssiThresholdFilter(
+                onRssiChange = onRssiChange,
+                onDrag = { value ->
+                    displayRssi = value
+                },
+                rssi = rssi,
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+            )
+
             ScanPeriodSection(
                 onPeriodClick = onPeriodClick,
-                currentPeriod = period
+                currentPeriod = period,
+            )
+        }
+    }
+}
+@Composable
+private fun RssiSettingHeader(
+    displayRssi: Int,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(
+                text = stringResource(
+                    R.string.feature_settings_rssi_title
+                ),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            Spacer(Modifier.height(2.dp))
+
+            Text(
+                text = stringResource(
+                    R.string.feature_settings_rssi_text
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+        ) {
+            Text(
+                text = stringResource(
+                    R.string.feature_settings_rssi_value,
+                    displayRssi,
+                ),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                style = MaterialTheme.typography.labelMedium,
             )
         }
     }

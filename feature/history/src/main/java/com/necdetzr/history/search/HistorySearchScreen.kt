@@ -215,7 +215,9 @@ private fun SearchResult(
                 modifier = modifier.fillMaxWidth()
             ) {
                 if (
-                    contentState.scans.isNotEmpty() && (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.SCAN)
+                    contentState.scans.isNotEmpty()
+                    &&
+                    (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.SCAN)
                 ) {
                     scanSection(
                         scans = contentState.scans,
@@ -224,7 +226,9 @@ private fun SearchResult(
                 }
 
                 if (
-                    contentState.devices.isNotEmpty() && (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.DEVICE)
+                    contentState.devices.isNotEmpty()
+                    &&
+                    (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.DEVICE)
                 ) {
                     deviceSection(
                         devices = contentState.devices,

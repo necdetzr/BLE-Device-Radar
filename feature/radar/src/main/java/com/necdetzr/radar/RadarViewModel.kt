@@ -1,6 +1,5 @@
 package com.necdetzr.radar
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.necdetzr.data.repository.BleRadarRepository
@@ -24,7 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
-
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class RadarViewModel @Inject constructor(
     private val bleRadarRepository: BleRadarRepository,

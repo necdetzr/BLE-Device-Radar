@@ -9,7 +9,7 @@ import com.necdetzr.database.entities.BleDeviceEntity
 import com.necdetzr.database.entities.ScanRecordEntity
 import com.necdetzr.database.relations.DeviceSearchSummaryRow
 import kotlinx.coroutines.flow.Flow
-
+@Suppress("TooManyFunctions")
 @Dao
 interface ScanHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)

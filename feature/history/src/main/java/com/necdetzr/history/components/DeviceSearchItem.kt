@@ -6,7 +6,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,7 +42,7 @@ import com.necdetzr.ui.util.toReadableDateTime
 @Composable
 fun DeviceSearchItem(
     device: ScannedBleDevice,
-    scanCount:Int,
+    scanCount: Int,
     seenInScans: List<ScanRecord>,
     expanded: Boolean,
     onExpandClick: (String) -> Unit,
@@ -56,107 +55,36 @@ fun DeviceSearchItem(
     )
     val seenInScansText = pluralStringResource(
         id = R.plurals.feature_history_seen_in_scan_count,
-        count = seenInScans.size,
+        count = scanCount,
         scanCount,
     )
-
     val lastSeenText = stringResource(
         id = R.string.feature_history_last_seen,
-        device.lastSeenAt.toReadableDateTime()
+        device.lastSeenAt.toReadableDateTime(),
     )
-
-    val historySummary =
-        stringResource(
-            id = R.string.feature_history_device_history_summary,
-            seenInScansText, lastSeenText,
-            )
+    val historySummary = stringResource(
+        id = R.string.feature_history_device_history_summary,
+        seenInScansText,
+        lastSeenText,
+    )
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = 12.dp,
-                vertical = 4.dp,
-            )
+            .padding(horizontal = 12.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(8.dp))
-            .clickable(
-                onClick = { onExpandClick(device.macAddress) }
-            ),
+            .clickable { onExpandClick(device.macAddress) },
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
     ) {
         Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = CircleShape,
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        modifier = Modifier.size(23.dp),
-                        imageVector = BleIcons.Bluetooth,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                }
-
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Text(
-                        text = device.name ?: stringResource(R.string.feature_history_unknown_device),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-
-                    Text(
-                        text = device.macAddress,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-
-
-                    Text(
-                        text = historySummary,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-                        onExpandClick(device.macAddress)
-                    },
-                ) {
-                    Icon(
-                        modifier = Modifier.graphicsLayer {
-                            rotationZ = arrowRotation
-                        },
-                        imageVector = BleIcons.DownArrow,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
+            DeviceSearchHeader(
+                device = device,
+                historySummary = historySummary,
+                arrowRotation = arrowRotation,
+                onExpandClick = onExpandClick,
+            )
 
             AnimatedVisibility(
                 visible = expanded,
@@ -171,7 +99,94 @@ fun DeviceSearchItem(
         }
     }
 }
+@Composable
+private fun DeviceSearchHeader(
+    device: ScannedBleDevice,
+    historySummary: String,
+    arrowRotation: Float,
+    onExpandClick: (String) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = CircleShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                modifier = Modifier.size(23.dp),
+                imageVector = BleIcons.Bluetooth,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
 
+        DeviceSearchSummary(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp),
+            device = device,
+            historySummary = historySummary,
+        )
+
+        IconButton(
+            onClick = { onExpandClick(device.macAddress) },
+        ) {
+            Icon(
+                modifier = Modifier.graphicsLayer {
+                    rotationZ = arrowRotation
+                },
+                imageVector = BleIcons.DownArrow,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+@Composable
+private fun DeviceSearchSummary(
+    device: ScannedBleDevice,
+    historySummary: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            text = device.name
+                ?: stringResource(R.string.feature_history_unknown_device),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+
+        Text(
+            text = device.macAddress,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+
+        Text(
+            text = historySummary,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.outline,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
 @Composable
 private fun DeviceScanHistory(
     scans: List<ScanRecord>,
@@ -220,6 +235,8 @@ private fun DeviceScanHistory(
         }
     }
 }
+
+@Suppress("LongMethod")
 @Composable
 private fun DeviceScanHistoryItem(
     scan: ScanRecord,
@@ -256,7 +273,6 @@ private fun DeviceScanHistoryItem(
                     tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             }
-
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -268,7 +284,6 @@ private fun DeviceScanHistoryItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-
                 Text(
                     text = scan.timestamp.toReadableDateTime(),
                     style = MaterialTheme.typography.bodySmall,
@@ -277,13 +292,11 @@ private fun DeviceScanHistoryItem(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-
             Text(
                 text = pluralStringResource(
                     id = R.plurals.feature_history_device_count,
                     count = scan.deviceCount,
-                    scan.deviceCount,
-                ),
+                    scan.deviceCount),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,

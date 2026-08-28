@@ -1,6 +1,6 @@
+@file:Suppress("TooManyFunctions")
 package com.necdetzr.ui
 
-import android.R.attr.end
 import android.content.ClipData
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -88,17 +88,13 @@ fun DeviceDetailSheetContent(
     val coroutineScope = rememberCoroutineScope()
     var copied by remember{ mutableStateOf(false)}
     val scrollState = rememberScrollState()
-    val clipboardLabel = stringResource(
-        R.string.core_ui_clipboard_mac_address_label,
-    )
+    val clipboardLabel = stringResource(R.string.core_ui_clipboard_mac_address_label)
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(scrollState)
             .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
-
-
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -106,8 +102,7 @@ fun DeviceDetailSheetContent(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .size(56.dp)
+                modifier = Modifier.size(56.dp)
                     .background(
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(16.dp),
@@ -125,7 +120,6 @@ fun DeviceDetailSheetContent(
                 device = bleDevice,
                 onCopyClick = {
                     coroutineScope.launch {
-
                         val clipData = ClipData.newPlainText(
                             clipboardLabel,
                             bleDevice.macAddress,
@@ -135,187 +129,247 @@ fun DeviceDetailSheetContent(
                         copied = true
                         kotlinx.coroutines.delay(2000.milliseconds)
                         copied = false
-
                     }
                 },
                 copied = copied
             )
         }
-
         RssiCard(
             rssi = bleDevice.rssi,
             lastSeen = bleDevice.lastSeenAt.toReadableDateTime()
         )
-
-        DeviceInfoGrid(
-            device = bleDevice
-        )
-        DetailedInfoSection(
-            bleDevice = bleDevice
-        )
-
+        DeviceInfoGrid(device = bleDevice)
+        DetailedInfoSection(bleDevice = bleDevice)
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
 @Composable
 private fun DetailedInfoSection(
     bleDevice: ScannedBleDevice
-){
-
+) {
     DeviceOtherInfoCard {
-        DeviceOtherInfoRow(
-            title = stringResource(R.string.core_ui_advertised_services),
-            value = stringResource(R.string.core_ui_services,bleDevice.advertisement.serviceUuids.size),
-            icon = BleIcons.Services,
+        AdvertisedServicesInfo(bleDevice)
+        ManufacturerDataInfo(bleDevice)
+        ServiceDataInfo(bleDevice)
+        RawAdvertisingPacketInfo(bleDevice)
+        ExtendedAdvertisingInfo(bleDevice)
+    }
+}
 
-            ) {
 
-            if (bleDevice.advertisement.serviceUuids.isEmpty()) {
+@Composable
+private fun AdvertisedServicesInfo(
+    bleDevice: ScannedBleDevice
+) {
+    val serviceUuids = bleDevice.advertisement.serviceUuids
+
+    DeviceOtherInfoRow(
+        title = stringResource(R.string.core_ui_advertised_services),
+        value = stringResource(
+            R.string.core_ui_services,
+            serviceUuids.size
+        ),
+        icon = BleIcons.Services
+    ) {
+        if (serviceUuids.isEmpty()) {
+            Text(
+                text = stringResource(R.string.core_ui_no_advertised),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            serviceUuids.forEach { uuid ->
                 Text(
-                    text = stringResource(R.string.core_ui_no_advertised),
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = BleAssignedNumbersMapper.getReadableName(uuid),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = uuid,
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            } else {
-                bleDevice.advertisement.serviceUuids.forEach { uuid ->
+            }
+        }
+    }
+}
+@Composable
+private fun ManufacturerDataInfo(
+    bleDevice: ScannedBleDevice
+) {
+    val manufacturerData = bleDevice.advertisement.manufacturerData
+    val unknownCompany = stringResource(R.string.core_ui_unknown)
+
+    DeviceOtherInfoRow(
+        title = stringResource(R.string.core_ui_manufacturer_data),
+        value = manufacturerData.size.toString(),
+        icon = BleIcons.Manufacturer
+    ) {
+        if (manufacturerData.isEmpty()) {
+            Text(
+                text = stringResource(R.string.core_ui_no_manufacturer),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            manufacturerData.forEach { data ->
+                Column(
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
                     Text(
-                        text = BleAssignedNumbersMapper.getReadableName(uuid),
+                        text = BleAssignedNumbersMapper.getCompanyName(
+                            companyId = data.companyId,
+                            unknownText = unknownCompany
+                        ),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+
                     Text(
-                        text = uuid,
+                        text = stringResource(
+                            R.string.core_ui_payload,
+                            data.payload.toHexString()
+                        ),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
             }
         }
+    }
+}
+@Composable
+private fun ServiceDataInfo(
+    bleDevice: ScannedBleDevice
+) {
+    val serviceData = bleDevice.advertisement.serviceData
 
-        DeviceOtherInfoRow(
-            title = stringResource(R.string.core_ui_manufacturer_data),
-            value = bleDevice.advertisement.manufacturerData.size.toString(),
-            icon = BleIcons.Manufacturer,
-
-            ) {
-            if (bleDevice.advertisement.manufacturerData.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.core_ui_no_manufacturer),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                bleDevice.advertisement.manufacturerData.forEach { data ->
-                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                        Text(
-                            text = BleAssignedNumbersMapper.getCompanyName(data.companyId,stringResource(R.string.core_ui_unknown)),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(
-                                R.string.core_ui_payload,
-                                data.payload.toHexString()
-                            ),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+    DeviceOtherInfoRow(
+        title = stringResource(R.string.core_ui_service_data),
+        value = stringResource(
+            R.string.core_ui_records,
+            serviceData.size
+        ),
+        icon = BleIcons.Sensors
+    ) {
+        if (serviceData.isEmpty()) {
+            Text(
+                text = stringResource(R.string.core_ui_no_service_data),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            serviceData.forEach { service ->
+                val payload = service.payload.joinToString(" ") {
+                    String.format("%02X", it)
                 }
-            }
-        }
-        DeviceOtherInfoRow (
-            title = stringResource(R.string.core_ui_service_data),
-            value = stringResource(R.string.core_ui_records,bleDevice.advertisement.serviceData.size),
-            icon = BleIcons.Sensors,
-        ) {
-            if (bleDevice.advertisement.serviceData.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.core_ui_no_service_data),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                bleDevice.advertisement.serviceData.forEach { service ->
-                    val payload = service.payload.joinToString(" ") {
-                        String.format("%02X", it)
-                    }
-                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                        SelectionContainer {
-                            Column{
-                                Text(
-                                    text = BleAssignedNumbersMapper.getReadableName(service.serviceUuid),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = stringResource(
-                                        R.string.core_ui_service_data_value,
-                                        payload,
-                                    ),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
 
+                Column(
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                    SelectionContainer {
+                        Column {
+                            Text(
+                                text = BleAssignedNumbersMapper.getReadableName(
+                                    service.serviceUuid
+                                ),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Text(
+                                text = stringResource(
+                                    R.string.core_ui_service_data_value,
+                                    payload
+                                ),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-
                     }
                 }
             }
         }
-        DeviceOtherInfoRow(
-            title = stringResource(R.string.core_ui_raw_advertising_packet),
-            value = stringResource(R.string.core_ui_bytes,bleDevice.advertisement.rawData.size),
-            icon = BleIcons.Code,
-        ) {
-            SelectionContainer {
-                Text(
-                    text = bleDevice.advertisement.rawData.toHexString(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+    }
+}
+@Composable
+private fun RawAdvertisingPacketInfo(
+    bleDevice: ScannedBleDevice
+) {
+    val rawData = bleDevice.advertisement.rawData
+
+    DeviceOtherInfoRow(
+        title = stringResource(
+            R.string.core_ui_raw_advertising_packet
+        ),
+        value = stringResource(
+            R.string.core_ui_bytes,
+            rawData.size
+        ),
+        icon = BleIcons.Code
+    ) {
+        SelectionContainer {
+            Text(
+                text = rawData.toHexString(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+@Composable
+private fun ExtendedAdvertisingInfo(
+    bleDevice: ScannedBleDevice
+) {
+    val advertisement = bleDevice.advertisement
+    val notAvailable = stringResource(R.string.core_ui_not_available)
+
+    val periodicIntervalText =
+        advertisement.periodicAdvertisingInterval
+            ?.let { interval ->
+                stringResource(
+                    R.string.core_ui_milliseconds,
+                    interval * 1.25
                 )
             }
+            ?: notAvailable
 
-        }
-        DeviceOtherInfoRow(
-            title = stringResource(R.string.core_ui_extended_advertising),
-            value = stringResource(R.string.core_ui_bluetooth_version_5_plus),
-            icon = BleIcons.Info,
-            showDivider = false
-        ) {
-            val periodicIntervalText =
-                bleDevice.advertisement.periodicAdvertisingInterval
-                    ?.let { interval ->
-                        stringResource(
-                            R.string.core_ui_milliseconds,
-                            interval * 1.25
-                        )
-                    }
-                    ?: stringResource(R.string.core_ui_not_available)
-            Text(
-                text = stringResource(R.string.core_ui_sid,bleDevice.advertisement.advertisingSid ?:stringResource(R.string.core_ui_not_available)),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = stringResource(R.string.core_ui_secondary_phy,bleDevice.advertisement.secondaryPhy.name),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = stringResource(R.string.core_ui_periodic_interval,
-                    periodicIntervalText
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+    DeviceOtherInfoRow(
+        title = stringResource(R.string.core_ui_extended_advertising),
+        value = stringResource(R.string.core_ui_bluetooth_version_5_plus),
+        icon = BleIcons.Info,
+        showDivider = false
+    ) {
+        Text(
+            text = stringResource(
+                R.string.core_ui_sid,
+                advertisement.advertisingSid ?: notAvailable
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
 
+        Text(
+            text = stringResource(
+                R.string.core_ui_secondary_phy,
+                advertisement.secondaryPhy.name
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Text(
+            text = stringResource(
+                R.string.core_ui_periodic_interval,
+                periodicIntervalText
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 @Composable
@@ -356,8 +410,10 @@ private fun SheetTitle(
                 AnimatedContent(
                     targetState = copied,
                     transitionSpec = {
-                        (scaleIn(animationSpec = tween(220)) + fadeIn(animationSpec = tween(220))) togetherWith
-                                (scaleOut(animationSpec = tween(220)) + fadeOut(animationSpec = tween(220)))
+                        (scaleIn(animationSpec = tween(220))
+                                + fadeIn(animationSpec = tween(220))) togetherWith
+                                (scaleOut(animationSpec = tween(220))
+                                        + fadeOut(animationSpec = tween(220)))
                     },
                     label = "iconAnimation"
                 ) { isCopied ->
@@ -450,52 +506,26 @@ private fun DeviceOtherInfoRow(
     icon: ImageVector,
     showDivider: Boolean = true,
     expandedContent: @Composable () -> Unit
-){
-    var expanded by remember{mutableStateOf(false)}
+) {
+    var expanded by remember { mutableStateOf(false) }
+
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = tween(durationMillis = 300),
         label = "arrowRotation"
     )
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = !expanded }
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp)
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-                    .padding(start = 16.dp, end = 8.dp),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+        DeviceOtherInfoHeader(
+            title = title,
+            value = value,
+            icon = icon,
+            rotation = rotation,
+            onClick = { expanded = !expanded }
+        )
 
-            Icon(
-                imageVector = BleIcons.DownArrow,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.rotate(rotation)
-            )
-        }
         AnimatedVisibility(
             visible = expanded,
             enter = expandVertically(animationSpec = tween(300)),
@@ -504,11 +534,16 @@ private fun DeviceOtherInfoRow(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 56.dp, end = 16.dp, bottom = 16.dp)
+                    .padding(
+                        start = 56.dp,
+                        end = 16.dp,
+                        bottom = 16.dp
+                    )
             ) {
                 expandedContent()
             }
         }
+
         if (showDivider) {
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -517,8 +552,57 @@ private fun DeviceOtherInfoRow(
             )
         }
     }
-
 }
+
+@Composable
+private fun DeviceOtherInfoHeader(
+    title: String,
+    value: String,
+    icon: ImageVector,
+    rotation: Float,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp)
+        )
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 16.dp, end = 8.dp),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Icon(
+            imageVector = BleIcons.DownArrow,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.rotate(rotation)
+        )
+    }
+}
+
 @Composable
 private fun InfoCard(
     modifier: Modifier = Modifier,
@@ -573,7 +657,7 @@ private fun RssiCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
+        tonalElevation = 1.dp
     ) {
         Column(
             modifier = Modifier
@@ -582,93 +666,113 @@ private fun RssiCard(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Text(
-                text = stringResource(R.string.core_ui_signal_strength),
+                text = stringResource(
+                    R.string.core_ui_signal_strength
+                ),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = rssi.toString(),
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.core_ui_dbm_unit),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 6.dp)
-                    )
-                }
+            RssiValueRow(rssi = rssi)
 
-                RssiIcon(rssi)
-            }
+            RssiDetailsRow(lastSeen = lastSeen)
+        }
+    }
+}
+@Composable
+private fun RssiValueRow(
+    rssi: Int
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Text(
+                text = rssi.toString(),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Bold
+            )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = BleIcons.Distance,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Column {
-                        Text(
-                            text = stringResource(R.string.core_ui_estimated_distance),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = stringResource(R.string.core_ui_undetermined),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-                Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = BleIcons.Time,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Column {
-                        Text(
-                            text = stringResource(R.string.core_ui_last_seen),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = lastSeen,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.width(4.dp))
+
+            Text(
+                text = stringResource(R.string.core_ui_dbm_unit),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+        }
+
+        RssiIcon(rssi)
+    }
+}
+@Composable
+private fun RssiDetailsRow(
+    lastSeen: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        RssiDetailItem(
+            modifier = Modifier.weight(1f),
+            icon = BleIcons.Distance,
+            title = stringResource(
+                R.string.core_ui_estimated_distance
+            ),
+            value = stringResource(
+                R.string.core_ui_undetermined
+            )
+        )
+
+        RssiDetailItem(
+            modifier = Modifier.weight(1f),
+            icon = BleIcons.Time,
+            title = stringResource(R.string.core_ui_last_seen),
+            value = lastSeen
+        )
+    }
+}
+@Composable
+private fun RssiDetailItem(
+    icon: ImageVector,
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(24.dp)
+        )
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
