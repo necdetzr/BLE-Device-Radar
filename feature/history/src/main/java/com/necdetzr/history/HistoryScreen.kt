@@ -75,11 +75,9 @@ internal fun HistoryScreen(
     recentScans: List<ScanRecord>
 ){
     val lastScan = recentScans.firstOrNull()
-
     val lastSeenValue =
         lastScan?.timestamp?.toReadableDateTime()
             ?: stringResource(R.string.feature_history_no_value)
-
     val lastSeenDescription = if (lastScan != null) {
         pluralStringResource(
             id = R.plurals.feature_history_device_count,
@@ -92,7 +90,6 @@ internal fun HistoryScreen(
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         modifier = modifier
-
     ) { innerPadding->
         Column(
             modifier = Modifier
@@ -114,21 +111,14 @@ internal fun HistoryScreen(
                 StatisticsCard(
                     modifier = Modifier.weight(1f),
                     icon = BleIcons.Statistic,
-                    title = stringResource(
-                        R.string.feature_history_total_scans
-                    ),
+                    title = stringResource(R.string.feature_history_total_scans),
                     value = totalScans.toString(),
-                    desc = stringResource(
-                        R.string.feature_history_saved_all_time
-                    ),
+                    desc = stringResource(R.string.feature_history_saved_all_time),
                 )
-
                 StatisticsCard(
                     modifier = Modifier.weight(1f),
                     icon = BleIcons.Time,
-                    title = stringResource(
-                        R.string.feature_history_last_seen_title
-                    ),
+                    title = stringResource(R.string.feature_history_last_seen_title),
                     value = lastSeenValue,
                     desc = lastSeenDescription,
                 )
@@ -137,8 +127,6 @@ internal fun HistoryScreen(
                 recentScans = recentScans,
                 onScanClick = onScanClick
             )
-
-
         }
     }
 }

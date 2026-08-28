@@ -32,7 +32,6 @@ fun BleDeviceCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
-
     Surface(
         onClick = onClick,
         modifier = modifier,
@@ -43,7 +42,6 @@ fun BleDeviceCard(
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
-
         ) {
             Icon(
                 BleIcons.Bluetooth,
@@ -61,7 +59,6 @@ fun BleDeviceCard(
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium
-
                     )
                 Text(
                     bleDevice.macAddress,
@@ -74,7 +71,6 @@ fun BleDeviceCard(
             Spacer(Modifier.width(12.dp))
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
-                
             ){
                 RssiIcon(rssi = bleDevice.rssi)
                 Spacer(Modifier.height(4.dp))
@@ -85,26 +81,15 @@ fun BleDeviceCard(
                         .background(
                         MaterialTheme.colorScheme.primary.copy(0.1f)
                     ).padding(horizontal = 8.dp, vertical = 2.dp)
-
-
                 ){
                     Text(
-                        text = stringResource(
-                            R.string.core_ui_dbm_value,
-                            bleDevice.rssi,
-                        ),
+                        text = stringResource(R.string.core_ui_dbm_value, bleDevice.rssi,),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-
             }
-
-
         }
-
-
     }
-
 }
 @Composable
 internal fun RssiIcon(rssi:Int){

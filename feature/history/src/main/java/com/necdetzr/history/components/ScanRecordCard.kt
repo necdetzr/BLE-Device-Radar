@@ -33,10 +33,9 @@ import com.necdetzr.ui.util.toReadableDateTime
 internal fun ScanRecordCard(
     scanRecord: ScanRecord,
     icon: ImageVector,
-    isLast:Boolean,
-    onScanClick: (Long) -> Unit
-
-){
+    isLast: Boolean,
+    onScanClick: (Long) -> Unit,
+) {
     Column {
         Row(
             modifier = Modifier
@@ -46,72 +45,99 @@ internal fun ScanRecordCard(
                 }
                 .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically,
-
-            ) {
+        ) {
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(6.dp),
-                contentAlignment = Alignment.Center
-            ){
+                contentAlignment = Alignment.Center,
+            ) {
                 Icon(
-                    icon,
-                    null
+                    imageVector = icon,
+                    contentDescription = null,
                 )
             }
+
             Spacer(Modifier.width(8.dp))
-            Column(
+
+            ScanRecordInfo(
                 modifier = Modifier.weight(1f),
+                scanRecord = scanRecord,
+            )
 
-                ) {
-                Text(
-                    text = scanRecord.scanName,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = scanRecord.timestamp.toReadableDateTime(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+            Spacer(Modifier.width(8.dp))
 
-                )
-            }
+            DeviceCountBadge(
+                deviceCount = scanRecord.deviceCount,
+            )
+
             Spacer(Modifier.width(8.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(0.4f))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-            ){
-                Text(
-                    text = pluralStringResource(
-                        id = R.plurals.feature_history_device_count,
-                        count = scanRecord.deviceCount,
-                        scanRecord.deviceCount,
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-            Spacer(Modifier.width(8.dp))
+
             Icon(
                 imageVector = BleIcons.Right,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-
         }
-        if(!isLast){
+
+        if (!isLast) {
             HorizontalDivider(
-                thickness = 0.2.dp
-
+                thickness = 0.2.dp,
             )
         }
+    }
+}
+@Composable
+private fun ScanRecordInfo(
+    scanRecord: ScanRecord,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        Text(
+            text = scanRecord.scanName,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+
+        Spacer(Modifier.height(2.dp))
+
+        Text(
+            text = scanRecord.timestamp.toReadableDateTime(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+@Composable
+private fun DeviceCountBadge(
+    deviceCount: Int,
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+            )
+            .padding(
+                horizontal = 12.dp,
+                vertical = 6.dp,
+            ),
+    ) {
+        Text(
+            text = pluralStringResource(
+                id = R.plurals.feature_history_device_count,
+                count = deviceCount,
+                deviceCount,
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
     }
 }
