@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.milliseconds
 @Suppress("TooManyFunctions")
 @HiltViewModel
@@ -88,6 +89,13 @@ class RadarViewModel @Inject constructor(
                         .startScanning()
                         .catch {
                             scanFailed = true
+                            _uiState.update {
+                                it.copy(
+                                    feedState = DeviceFeedUiState.Idle,
+                                    radarMessage = RadarUserMessage.ScanFailed,
+                                    saveButtonEnabled = false,
+                                )
+                            }
                             _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
                         }
                         .collect { device->
@@ -129,17 +137,37 @@ class RadarViewModel @Inject constructor(
         }
 
     }
-    fun onSaveRecordClick(name:String){
+    fun onSaveRecordClick(name: String) {
         viewModelScope.launch {
-            val currentFeedState = _uiState.value.feedState
-            if(currentFeedState is DeviceFeedUiState.Success){
-                val devicesToSave = currentFeedState.devices
+            val state = _uiState.value
+            val feedState = state.feedState as? DeviceFeedUiState.Success
+                ?: return@launch
+
+            if (!state.saveButtonEnabled) return@launch
+
+            _uiState.update {
+                it.copy(saveButtonEnabled = false)
+            }
+
+            try {
                 scanHistoryRepository.saveFullScan(
                     name = name.trim(),
-                    devices = devicesToSave
+                    devices = feedState.devices,
                 )
+
+                _uiState.update {
+                    it.copy(showAlertDialog = false)
+                }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (_: Exception) {
+                _uiState.update {
+                    it.copy(
+                        saveButtonEnabled = true,
+                        radarMessage = RadarUserMessage.SaveFailed,
+                    )
+                }
             }
-            _uiState.update { it.copy(saveButtonEnabled = false, showAlertDialog = false) }
         }
     }
 
@@ -162,4 +190,5 @@ sealed interface RadarUserMessage {
     data object PermissionDenied : RadarUserMessage
     data object ScanFailed : RadarUserMessage
     data object BluetoothEnableDenied : RadarUserMessage
+    data object SaveFailed : RadarUserMessage
 }
