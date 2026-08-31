@@ -16,4 +16,8 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:data"))
     implementation(libs.androidx.activity.compose)
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.truth)
+    testImplementation(libs.turbine)
+    testImplementation(libs.mockk)
 }

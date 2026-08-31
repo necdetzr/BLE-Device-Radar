@@ -244,4 +244,7 @@ private val RadarUserMessage.stringResource: Int
 
         RadarUserMessage.BluetoothEnableDenied ->
             R.string.feature_radar_bluetooth_enable_denied
+
+        RadarUserMessage.SaveFailed ->
+            R.string.feature_radar_save_failed
     }

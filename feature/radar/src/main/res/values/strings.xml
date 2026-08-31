@@ -23,4 +23,5 @@
     <string name="feature_radar_save_example">e.g. Office Building A</string>
     <string name="feature_radar_cancel">Cancel</string>
     <string name="feature_radar_save">Save</string>
+    <string name="feature_radar_save_failed">Could not save the scan. Please try again.</string>
 </resources>
