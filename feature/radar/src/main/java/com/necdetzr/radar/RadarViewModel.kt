@@ -96,7 +96,6 @@ class RadarViewModel @Inject constructor(
                                     saveButtonEnabled = false,
                                 )
                             }
-                            _uiState.update { it.copy(radarMessage = RadarUserMessage.ScanFailed) }
                         }
                         .collect { device->
                             scannedDevices.updateScannedDevice(device)
