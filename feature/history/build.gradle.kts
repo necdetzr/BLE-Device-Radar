@@ -15,4 +15,8 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:model"))
     implementation(project(":core:ui"))
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.truth)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
 }
