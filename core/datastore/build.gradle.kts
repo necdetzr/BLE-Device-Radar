@@ -11,5 +11,7 @@ dependencies {
     testImplementation(libs.junit)
     implementation("androidx.datastore:datastore-preferences:1.2.1")
     implementation(project(":core:model"))
-
+    testImplementation(libs.truth)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 }
