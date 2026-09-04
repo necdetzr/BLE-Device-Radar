@@ -1,7 +1,6 @@
 package com.necdetzr.datastore
 
 import androidx.datastore.core.DataStore
-import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -158,8 +157,8 @@ class BlePreferencesDataSourceTest {
         PreferenceDataStoreFactory.create(
             scope = scope,
             produceFile = {
-                temporaryFolder.newFile("test.preferences_pb")
-            },
+                temporaryFolder.root.resolve("test.preferences_pb")
+            }
         )
 
     private fun createDataSource(
