@@ -22,11 +22,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun RadarAnimation(
     isScanning: Boolean,
+    radarSize: Dp = DEFAULT_RADAR_SIZE_DP.dp,
 ) {
     val rotation = remember {
         Animatable(0f)
@@ -52,12 +54,12 @@ fun RadarAnimation(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(radarSize)
             .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(
-            modifier = Modifier.size(200.dp),
+            modifier = Modifier.size(radarSize),
         ) {
             drawRadar(
                 isScanning = isScanning,
@@ -164,3 +166,4 @@ private fun DrawScope.drawRadarSweep(
 }
 private const val FULL_ROTATION = 360f
 private const val ROTATION_DURATION_MILLIS = 2_500
+private const val DEFAULT_RADAR_SIZE_DP = 200
