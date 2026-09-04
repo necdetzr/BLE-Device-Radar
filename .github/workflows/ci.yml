@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-lint:
+  build-test-and-lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,6 +26,9 @@ jobs:
 
       - name: Run Detekt Static Analysis
         run: ./gradlew detekt
+
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest
 
       - name: Build Android Project
         run: ./gradlew assembleDebug
