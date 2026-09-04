@@ -1,10 +1,12 @@
 package com.necdetzr.history
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,7 +15,9 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -91,42 +95,153 @@ internal fun HistoryScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         modifier = modifier
     ) { innerPadding->
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
-                .padding(innerPadding)
+                .padding(innerPadding),
         ) {
-            HistoryTitle()
-            Spacer(Modifier.height(12.dp))
-            HistorySearchPlaceholder (
-                onClick = onSearchClick
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                StatisticsCard(
-                    modifier = Modifier.weight(1f),
-                    icon = BleIcons.Statistic,
-                    title = stringResource(R.string.feature_history_total_scans),
-                    value = totalScans.toString(),
-                    desc = stringResource(R.string.feature_history_saved_all_time),
+            if (maxWidth >= WIDE_LAYOUT_MIN_WIDTH_DP.dp) {
+                HistoryWideContent(
+                    totalScans = totalScans,
+                    lastSeenValue = lastSeenValue,
+                    lastSeenDescription = lastSeenDescription,
+                    recentScans = recentScans,
+                    onSearchClick = onSearchClick,
+                    onScanClick = onScanClick,
                 )
-                StatisticsCard(
-                    modifier = Modifier.weight(1f),
-                    icon = BleIcons.Time,
-                    title = stringResource(R.string.feature_history_last_seen_title),
-                    value = lastSeenValue,
-                    desc = lastSeenDescription,
+            } else {
+                HistoryCompactContent(
+                    totalScans = totalScans,
+                    lastSeenValue = lastSeenValue,
+                    lastSeenDescription = lastSeenDescription,
+                    recentScans = recentScans,
+                    onSearchClick = onSearchClick,
+                    onScanClick = onScanClick,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun HistoryCompactContent(
+    totalScans: Int,
+    lastSeenValue: String,
+    lastSeenDescription: String,
+    recentScans: List<ScanRecord>,
+    onSearchClick: () -> Unit,
+    onScanClick: (Long) -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        HistoryTitle()
+        Spacer(Modifier.height(12.dp))
+        HistorySearchPlaceholder(onClick = onSearchClick)
+        StatisticsSection(
+            totalScans = totalScans,
+            lastSeenValue = lastSeenValue,
+            lastSeenDescription = lastSeenDescription,
+            modifier = Modifier.padding(vertical = 16.dp),
+        )
+        RecentSection(
+            recentScans = recentScans,
+            onScanClick = onScanClick,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun HistoryWideContent(
+    totalScans: Int,
+    lastSeenValue: String,
+    lastSeenDescription: String,
+    recentScans: List<ScanRecord>,
+    onSearchClick: () -> Unit,
+    onScanClick: (Long) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+
+
+        Row(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(
+                modifier = Modifier.weight(0.38f),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                HistorySearchPlaceholder(
+                    onClick = onSearchClick,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                StatisticsSection(
+                    totalScans = totalScans,
+                    lastSeenValue = lastSeenValue,
+                    lastSeenDescription = lastSeenDescription,
+                    vertical = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
             RecentSection(
                 recentScans = recentScans,
-                onScanClick = onScanClick
+                onScanClick = onScanClick,
+                modifier = Modifier.weight(0.62f),
             )
+        }
+    }
+}
+
+@Composable
+private fun StatisticsSection(
+    totalScans: Int,
+    lastSeenValue: String,
+    lastSeenDescription: String,
+    modifier: Modifier = Modifier,
+    vertical: Boolean = false,
+) {
+    val totalScansCard: @Composable (Modifier) -> Unit = { cardModifier ->
+        StatisticsCard(
+            modifier = cardModifier,
+            icon = BleIcons.Statistic,
+            title = stringResource(R.string.feature_history_total_scans),
+            value = totalScans.toString(),
+            desc = stringResource(R.string.feature_history_saved_all_time),
+        )
+    }
+    val lastSeenCard: @Composable (Modifier) -> Unit = { cardModifier ->
+        StatisticsCard(
+            modifier = cardModifier,
+            icon = BleIcons.Time,
+            title = stringResource(R.string.feature_history_last_seen_title),
+            value = lastSeenValue,
+            desc = lastSeenDescription,
+        )
+    }
+
+    if (vertical) {
+        Column(
+            modifier = modifier.verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            totalScansCard(Modifier.fillMaxWidth())
+            lastSeenCard(Modifier.fillMaxWidth())
+        }
+    } else {
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            totalScansCard(Modifier.weight(1f))
+            lastSeenCard(Modifier.weight(1f))
         }
     }
 }
@@ -209,10 +324,11 @@ private fun StatisticsCard(
 @Composable
 private fun RecentSection(
     recentScans:List<ScanRecord>,
-    onScanClick:(Long)->Unit
+    onScanClick:(Long)->Unit,
+    modifier: Modifier = Modifier,
 ){
     Column(
-        modifier = Modifier.padding(bottom = 12.dp)
+        modifier = modifier.padding(bottom = 12.dp)
     ) {
         RecentTitle()
         Spacer(Modifier.height(8.dp))
@@ -248,12 +364,7 @@ private fun RecentSection(
 
                     }
                 }
-
             }
-
-
-
-
         }
     }
 }
@@ -274,4 +385,6 @@ private fun RecentTitle(){
         )
     }
 }
+
+private const val WIDE_LAYOUT_MIN_WIDTH_DP = 600
 

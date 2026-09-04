@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -89,34 +90,116 @@ internal fun SettingsScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         modifier = modifier
     ) {innerPadding->
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-
+                .padding(innerPadding),
         ) {
-            SettingsTitle()
-            Spacer(Modifier.height(24.dp))
-            ScanningSection(
-                onRssiChange = onRssiChange,
-                onPeriodClick = onPeriodClick,
-                rssi = rssi,
-                period = period
-            )
-            Spacer(Modifier.height(24.dp))
-            ThemeSection(
-                currentTheme = currentTheme,
-                onThemeSelection = onThemeSelection
-            )
-            Spacer(Modifier.height(24.dp))
-            AboutSection()
-            Spacer(Modifier.height(12.dp))
-            DangerZoneSection(
-                onDeleteAllScans = onDeleteAllScans
-            )
+            if (maxWidth >= WIDE_LAYOUT_MIN_WIDTH_DP.dp) {
+                SettingsWideContent(
+                    onRssiChange = onRssiChange,
+                    onThemeSelection = onThemeSelection,
+                    onPeriodClick = onPeriodClick,
+                    onDeleteAllScans = onDeleteAllScans,
+                    currentTheme = currentTheme,
+                    rssi = rssi,
+                    period = period,
+                )
+            } else {
+                SettingsCompactContent(
+                    onRssiChange = onRssiChange,
+                    onThemeSelection = onThemeSelection,
+                    onPeriodClick = onPeriodClick,
+                    onDeleteAllScans = onDeleteAllScans,
+                    currentTheme = currentTheme,
+                    rssi = rssi,
+                    period = period,
+                )
+            }
+        }
+    }
+}
 
+@Composable
+private fun SettingsCompactContent(
+    onRssiChange: (Int) -> Unit,
+    onThemeSelection: (ThemeConfig) -> Unit,
+    onPeriodClick: (Long) -> Unit,
+    onDeleteAllScans: () -> Unit,
+    currentTheme: ThemeConfig,
+    rssi: Int,
+    period: Long,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
+        SettingsTitle()
+        Spacer(Modifier.height(24.dp))
+        ScanningSection(
+            onRssiChange = onRssiChange,
+            onPeriodClick = onPeriodClick,
+            rssi = rssi,
+            period = period,
+        )
+        Spacer(Modifier.height(24.dp))
+        ThemeSection(
+            currentTheme = currentTheme,
+            onThemeSelection = onThemeSelection,
+        )
+        Spacer(Modifier.height(24.dp))
+        AboutSection()
+        Spacer(Modifier.height(12.dp))
+        DangerZoneSection(onDeleteAllScans = onDeleteAllScans)
+    }
+}
+
+@Composable
+private fun SettingsWideContent(
+    onRssiChange: (Int) -> Unit,
+    onThemeSelection: (ThemeConfig) -> Unit,
+    onPeriodClick: (Long) -> Unit,
+    onDeleteAllScans: () -> Unit,
+    currentTheme: ThemeConfig,
+    rssi: Int,
+    period: Long,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
+        SettingsTitle()
+        Spacer(Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+            ) {
+                ScanningSection(
+                    onRssiChange = onRssiChange,
+                    onPeriodClick = onPeriodClick,
+                    rssi = rssi,
+                    period = period,
+                )
+                Spacer(Modifier.height(16.dp))
+                AboutSection()
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+            ) {
+                ThemeSection(
+                    currentTheme = currentTheme,
+                    onThemeSelection = onThemeSelection,
+                )
+                Spacer(Modifier.height(16.dp))
+                DangerZoneSection(onDeleteAllScans = onDeleteAllScans)
+            }
         }
     }
 }
@@ -661,4 +744,6 @@ private fun SectionTitle(
         modifier = modifier
     )
 }
+
+private const val WIDE_LAYOUT_MIN_WIDTH_DP = 600
 
