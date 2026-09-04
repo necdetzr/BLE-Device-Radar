@@ -15,11 +15,10 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:ble"))
     implementation(project(":core:database"))
-
-
-
-
-    implementation(libs.material)
     testImplementation(libs.junit)
+    testImplementation(libs.truth)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlinx.coroutines.test)
 
 }
