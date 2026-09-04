@@ -1,10 +1,14 @@
 # BLE Device Radar
 
-[![CI Pipeline](https://github.com/necdetzr/BLE-Device-Radar/actions/workflows/ci.yml/badge.svg)](https://github.com/necdetzr/BLE-Device-Radar/actions/workflows/ci.yml)
+[![CI](https://github.com/necdetzr/BLE-Device-Radar/actions/workflows/ci.yml/badge.svg)](https://github.com/necdetzr/BLE-Device-Radar/actions/workflows/ci.yml)
+![Android](https://img.shields.io/badge/Android-12%2B-3DDC84?logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
 
-BLE Device Radar is an Android application for discovering nearby Bluetooth Low Energy devices, inspecting their advertising data, and saving scans for later review.
+BLE Device Radar is a native Android application for discovering nearby Bluetooth Low Energy devices, inspecting their advertising data, and saving scan sessions for later review.
 
-The project is built with Kotlin and Jetpack Compose using a modular, layered architecture inspired by the official Now in Android project.
+It is built with Kotlin and Jetpack Compose using a modular, layered architecture inspired by the official Now in Android project. Version `0.1.0` focuses on reliable BLE scanning, local scan history, responsive layouts, and a testable data and presentation layer.
 
 ## Features
 
@@ -16,6 +20,7 @@ The project is built with Kotlin and Jetpack Compose using a modular, layered ar
 - Handle unsupported Bluetooth hardware, disabled Bluetooth, denied permissions and scan failures.
 - Configure the scan duration and RSSI threshold.
 - Save completed scans with a custom name.
+- Adapt the radar layout to compact and wide screens.
 
 ### Scan history
 
@@ -26,6 +31,7 @@ The project is built with Kotlin and Jetpack Compose using a modular, layered ar
 - Search devices by name or MAC address.
 - See which saved scans contained a particular device.
 - Delete individual scans or clear the entire scan history.
+- Use compact and wide layouts in portrait and landscape configurations.
 
 ### Settings
 
@@ -43,7 +49,7 @@ The scan-history database is excluded from Android cloud backup and device trans
 
 ## Architecture
 
-The project uses a modular, layered architecture with unidirectional state flow:
+The project uses a modular, layered architecture with unidirectional data flow:
 
 ```text
 Compose UI
@@ -57,7 +63,7 @@ DataStore / Room / Android BLE APIs
 
 ViewModels expose immutable `StateFlow` UI state. UI events are passed back to ViewModels through explicit callbacks.
 
-The project does not introduce use cases solely to satisfy an architectural template. Business rules can be moved into dedicated use cases when they become complex enough to justify them.
+Repository interfaces separate feature code from Android BLE, Room, and DataStore implementations. Dedicated use cases are introduced only when a business rule needs orchestration beyond a repository call.
 
 ## Tech stack
 
@@ -75,6 +81,9 @@ The project does not introduce use cases solely to satisfy an architectural temp
 - Version Catalogs
 - Convention Plugins
 - Detekt
+- JUnit, MockK and Truth
+- Room in-memory database tests
+- Turbine
 - GitHub Actions
 
 ## Module structure
@@ -96,6 +105,7 @@ BLE-Device-Radar
     ├── designsystem
     ├── model
     ├── navigation
+    ├── testing
     └── ui
 ```
 
@@ -141,6 +151,9 @@ BLE-Device-Radar
 - `:core:navigation`  
   Navigation 3 state and navigation contracts.
 
+- `:core:testing`
+  Shared test utilities, including coroutine dispatcher rules.
+
 - `:core:ui`  
   Reusable device cards, device feeds and detail components.
 
@@ -171,7 +184,7 @@ Open the project in Android Studio, sync Gradle, and run the `app` configuration
 
 When prompted, grant the Nearby devices permissions required for BLE scanning.
 
-## Build and code quality
+## Build, test and code quality
 
 Build the debug application:
 
@@ -185,26 +198,61 @@ Run static analysis:
 ./gradlew detekt
 ```
 
+Run JVM unit tests:
+
+```bash
+./gradlew testDebugUnitTest
+```
+
+Run Room instrumented tests on a connected device or emulator:
+
+```bash
+./gradlew :core:database:connectedDebugAndroidTest
+```
+
 On Windows:
 
 ```powershell
 .\gradlew.bat assembleDebug
 .\gradlew.bat detekt
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat :core:database:connectedDebugAndroidTest
 ```
 
-The GitHub Actions CI workflow runs Detekt and builds the debug application for pushes and pull requests targeting `main`.
+The GitHub Actions workflow runs Detekt, JVM unit tests, and a debug build for pushes and pull requests targeting `main`.
 
 ## Screenshots
 
-Screenshots and a short radar demonstration will be added before the first public release.
+<table>
+  <tr>
+    <th>Radar scanning</th>
+    <th>Device details</th>
+    <th>Scan history</th>
+    <th>History search</th>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/radar-scanning.jpeg" alt="BLE radar scanning for nearby devices" width="220"></td>
+    <td><img src="docs/screenshots/device-details.jpeg" alt="Detailed BLE device information" width="220"></td>
+    <td><img src="docs/screenshots/history.jpeg" alt="Saved BLE scan history" width="220"></td>
+    <td><img src="docs/screenshots/history-search.jpeg" alt="Search scans and discovered devices" width="220"></td>
+  </tr>
+  <tr>
+    <th>Save scan</th>
+    <th>Saved scan details</th>
+    <th>Settings</th>
+    <th></th>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/save-scan-dialog.jpeg" alt="Save a completed BLE scan" width="220"></td>
+    <td><img src="docs/screenshots/scan-details.jpeg" alt="Saved scan details and discovered devices" width="220"></td>
+    <td><img src="docs/screenshots/settings.jpeg" alt="BLE scanner and appearance settings" width="220"></td>
+    <td></td>
+  </tr>
+</table>
 
-Recommended screenshots:
+## Project status
 
-- Radar while scanning
-- Device detail sheet
-- Saved scan history
-- Device search
-- Settings
+BLE Device Radar is currently preparing for its first public `0.1.0` release. Core scanning, history, settings, responsive layouts, static analysis, and automated unit tests are in place.
 
 ## License
 
