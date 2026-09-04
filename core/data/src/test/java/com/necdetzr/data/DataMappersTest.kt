@@ -1,6 +1,8 @@
-package com.necdetzr.data.mapper
+package com.necdetzr.data
 
 import com.google.common.truth.Truth.assertThat
+import com.necdetzr.data.mapper.toEntity
+import com.necdetzr.data.mapper.toModel
 import com.necdetzr.database.ScanRecordWithDevices
 import com.necdetzr.database.entities.BleDeviceEntity
 import com.necdetzr.database.entities.ScanRecordEntity

@@ -1,7 +1,8 @@
-package com.necdetzr.data.repository
+package com.necdetzr.data
 
 import com.google.common.truth.Truth.assertThat
 import com.necdetzr.ble.domain.BleScanner
+import com.necdetzr.data.repository.DefaultBleRadarRepository
 import com.necdetzr.model.ScannedBleDevice
 import io.mockk.every
 import io.mockk.mockk

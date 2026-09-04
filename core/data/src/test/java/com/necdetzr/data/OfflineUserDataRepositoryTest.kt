@@ -1,6 +1,7 @@
-package com.necdetzr.data.repository
+package com.necdetzr.data
 
 import com.google.common.truth.Truth.assertThat
+import com.necdetzr.data.repository.OfflineUserDataRepository
 import com.necdetzr.datastore.BlePreferencesDataSource
 import com.necdetzr.model.SortType
 import com.necdetzr.model.ThemeConfig
