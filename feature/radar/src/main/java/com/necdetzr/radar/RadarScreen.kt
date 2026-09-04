@@ -3,10 +3,12 @@ package com.necdetzr.radar
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +18,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -32,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.necdetzr.designsystem.icons.BleIcons
 import com.necdetzr.model.ScannedBleDevice
@@ -57,38 +62,130 @@ internal fun RadarScreen(
         modifier = modifier,
         contentWindowInsets = WindowInsets.safeDrawing,
     ) { paddingValues ->
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            RadarAnimation(
-                isScanning =
-                    uiState.feedState is DeviceFeedUiState.Scanning,
-            )
+            if (maxWidth >= WIDE_LAYOUT_MIN_WIDTH_DP.dp) {
+                RadarWideContent(
+                    uiState = uiState,
+                    radarSize = if (maxHeight < SHORT_HEIGHT_DP.dp) {
+                        SHORT_RADAR_SIZE_DP.dp
+                    } else {
+                        WIDE_RADAR_SIZE_DP.dp
+                    },
+                    onDeviceClick = onDeviceClick,
+                    onButtonClick = onButtonClick,
+                    onCancelClick = onCancelClick,
+                    onSaveButton = onSaveButton,
+                )
+            } else {
+                RadarCompactContent(
+                    uiState = uiState,
+                    onDeviceClick = onDeviceClick,
+                    onButtonClick = onButtonClick,
+                    onCancelClick = onCancelClick,
+                    onSaveButton = onSaveButton,
+                )
+            }
+        }
+    }
+}
 
-            RadarStatusTitle(
-                feedState = uiState.feedState,
-            )
+@Composable
+private fun RadarCompactContent(
+    uiState: RadarScreenState,
+    onDeviceClick: (ScannedBleDevice) -> Unit,
+    onButtonClick: () -> Unit,
+    onCancelClick: () -> Unit,
+    onSaveButton: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        RadarAnimation(
+            isScanning = uiState.feedState is DeviceFeedUiState.Scanning,
+        )
+        RadarStatusTitle(feedState = uiState.feedState)
+        DeviceListTitle()
+        RadarDeviceList(
+            feedState = uiState.feedState,
+            onDeviceClick = onDeviceClick,
+            modifier = Modifier.weight(1f),
+        )
+        RadarActionButtons(
+            feedState = uiState.feedState,
+            saveButtonEnabled = uiState.saveButtonEnabled,
+            onStartClick = onButtonClick,
+            onCancelClick = onCancelClick,
+            onSaveClick = onSaveButton,
+        )
+    }
+}
 
-            DeviceListTitle()
+@Composable
+private fun RadarWideContent(
+    uiState: RadarScreenState,
+    radarSize: Dp,
+    onDeviceClick: (ScannedBleDevice) -> Unit,
+    onButtonClick: () -> Unit,
+    onCancelClick: () -> Unit,
+    onSaveButton: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize()
 
-            RadarDeviceList(
-                feedState = uiState.feedState,
-                onDeviceClick = onDeviceClick,
-                modifier = Modifier.weight(1f),
-            )
+    ) {
+        Row(
+            modifier = Modifier
 
-            RadarActionButtons(
+                .fillMaxWidth()
+                .weight(1f)
+            ,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(0.42f)
+                    .fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                RadarStatusTitle(feedState = uiState.feedState)
+
+                RadarAnimation(
+                    isScanning =
+                        uiState.feedState is DeviceFeedUiState.Scanning,
+                    radarSize = radarSize,
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(0.44f)
+                    .fillMaxHeight(),
+            ) {
+                DeviceListTitle()
+                RadarDeviceList(
+                    feedState = uiState.feedState,
+                    onDeviceClick = onDeviceClick,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            WideRadarActionButtons(
+                modifier = Modifier.weight(0.12f),
                 feedState = uiState.feedState,
                 saveButtonEnabled = uiState.saveButtonEnabled,
                 onStartClick = onButtonClick,
                 onCancelClick = onCancelClick,
                 onSaveClick = onSaveButton,
             )
+
         }
+
+
     }
 }
 @Composable
@@ -186,12 +283,59 @@ private fun RadarActionButtons(
         )
     }
 }
+@Composable
+private fun WideRadarActionButtons(
+    modifier: Modifier = Modifier,
+    feedState: DeviceFeedUiState,
+    saveButtonEnabled: Boolean,
+    onStartClick: () -> Unit,
+    onCancelClick: () -> Unit,
+    onSaveClick: () -> Unit,
+) {
+    val isScanning = feedState is DeviceFeedUiState.Scanning
+    val isCompleted = feedState is DeviceFeedUiState.Success
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+
+    ) {
+        if (isCompleted) {
+            SaveScanButton(
+                onClick = onSaveClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 56.dp),
+                enabled = saveButtonEnabled,
+                isWide = true
+            )
+        }
+
+        ScanButton(
+            onClick = {
+                if (isScanning) {
+                    onCancelClick()
+                } else {
+                    onStartClick()
+                }
+            },
+            modifier = Modifier
+                .weight(1f)
+                .heightIn(min = 56.dp),
+            isScanning = isScanning,
+            isWide = true
+        )
+    }
+}
 
 @Composable
 private fun SaveScanButton(
     onClick: () -> Unit,
     enabled:Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isWide:Boolean = false
 ) {
     val text = if(enabled) stringResource(R.string.feature_radar_save_scan)
     else stringResource(R.string.feature_radar_saved)
@@ -213,12 +357,15 @@ private fun SaveScanButton(
                 tint = MaterialTheme.colorScheme.onSecondaryContainer
             )
             Spacer(Modifier.width(6.dp))
-            Text(
-                text = text,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            if(!isWide){
+                Text(
+                    text = text,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
         }
     }
 }
@@ -228,13 +375,13 @@ private fun ScanButton(
     modifier: Modifier = Modifier,
     onClick:()-> Unit,
     isScanning:Boolean = false,
+    isWide:Boolean = false
 ){
     Button(
         onClick = onClick,
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
-
         ),
 
     ) {
@@ -248,20 +395,23 @@ private fun ScanButton(
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Spacer(Modifier.width(6.dp))
-            if (isScanning){
-                Text(
-                    text = stringResource(R.string.feature_radar_scanning),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }else{
-                Text(
-                    text = stringResource(R.string.feature_radar_start_scan),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+            if(!isWide){
+                if (isScanning){
+                    Text(
+                        text = stringResource(R.string.feature_radar_scanning),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }else{
+                    Text(
+                        text = stringResource(R.string.feature_radar_start_scan),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+            }
+
             }
 
         }
@@ -396,3 +546,8 @@ private fun ScanButtonPreview(){
 private fun BluetoothNotSupportedPreview(){
     BluetoothNotSupportedScreen()
 }
+
+private const val WIDE_LAYOUT_MIN_WIDTH_DP = 600
+private const val SHORT_HEIGHT_DP = 400
+private const val SHORT_RADAR_SIZE_DP = 140
+private const val WIDE_RADAR_SIZE_DP = 180

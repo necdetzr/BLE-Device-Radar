@@ -1,8 +1,12 @@
 package com.necdetzr.history.search
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -68,6 +72,7 @@ fun HistorySearchScreen(
     }
 }
 
+@Suppress("LongMethod")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun HistorySearchScreen(
@@ -91,31 +96,80 @@ internal fun HistorySearchScreen(
             )
         }
     ) { innerPadding->
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 12.dp)
-
+                .padding(horizontal = 12.dp),
         ) {
-            HistorySearchField(
-                query = query,
-                onQueryChange =onQueryChange
-            )
-            CategorySection(
-                onCategoryClick = onCategoryClick,
-                selectedCategory = selectedCategory
-            )
-            SearchResult(
-                modifier = Modifier.weight(1f),
-                selectedCategory = selectedCategory,
-                contentState = contentState,
-                onScanClick = onScanClick,
-                onDeviceExpandClick = onDeviceExpandClick,
-                expandedDeviceMac = expandedDeviceMac,
-                expandedDeviceScans = expandedDeviceScans
-            )
+            if (maxWidth >= WIDE_LAYOUT_MIN_WIDTH_DP.dp) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    SearchControls(
+                        query = query,
+                        selectedCategory = selectedCategory,
+                        onQueryChange = onQueryChange,
+                        onCategoryClick = onCategoryClick,
+                        modifier = Modifier.weight(0.38f),
+                    )
+                    SearchResult(
+                        modifier = Modifier
+                            .weight(0.62f)
+                            .fillMaxHeight(),
+                        selectedCategory = selectedCategory,
+                        contentState = contentState,
+                        onScanClick = onScanClick,
+                        onDeviceExpandClick = onDeviceExpandClick,
+                        expandedDeviceMac = expandedDeviceMac,
+                        expandedDeviceScans = expandedDeviceScans,
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    SearchControls(
+                        query = query,
+                        selectedCategory = selectedCategory,
+                        onQueryChange = onQueryChange,
+                        onCategoryClick = onCategoryClick,
+                    )
+                    SearchResult(
+                        modifier = Modifier.weight(1f),
+                        selectedCategory = selectedCategory,
+                        contentState = contentState,
+                        onScanClick = onScanClick,
+                        onDeviceExpandClick = onDeviceExpandClick,
+                        expandedDeviceMac = expandedDeviceMac,
+                        expandedDeviceScans = expandedDeviceScans,
+                    )
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun SearchControls(
+    query: String,
+    selectedCategory: SearchCategory,
+    onQueryChange: (String) -> Unit,
+    onCategoryClick: (SearchCategory) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        HistorySearchField(
+            query = query,
+            onQueryChange = onQueryChange,
+        )
+        CategorySection(
+            onCategoryClick = onCategoryClick,
+            selectedCategory = selectedCategory,
+        )
     }
 }
 
@@ -190,53 +244,57 @@ private fun SearchResult(
     expandedDeviceScans: List<ScanRecord>,
     contentState: HistorySearchContentState
 ) {
-    when (contentState) {
-        HistorySearchContentState.Loading -> {
-            HistorySearchLoading()
-        }
+    Box(
+        modifier = modifier,
+    ) {
+        when (contentState) {
+            HistorySearchContentState.Loading -> {
+                HistorySearchLoading()
+            }
 
-        HistorySearchContentState.Empty -> {
-            HistorySearchEmpty(
-                title = stringResource(
-                    R.string.feature_history_search_empty_title
-                ),
-                description = stringResource(
-                    R.string.feature_history_search_empty_description
+            HistorySearchContentState.Empty -> {
+                HistorySearchEmpty(
+                    title = stringResource(
+                        R.string.feature_history_search_empty_title
+                    ),
+                    description = stringResource(
+                        R.string.feature_history_search_empty_description
+                    )
                 )
-            )
-        }
+            }
 
-        HistorySearchContentState.Error -> {
-            HistorySearchError()
-        }
+            HistorySearchContentState.Error -> {
+                HistorySearchError()
+            }
 
-        is HistorySearchContentState.Success -> {
-            LazyColumn(
-                modifier = modifier.fillMaxWidth()
-            ) {
-                if (
-                    contentState.scans.isNotEmpty()
-                    &&
-                    (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.SCAN)
+            is HistorySearchContentState.Success -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    scanSection(
-                        scans = contentState.scans,
-                        onScanClick = onScanClick
-                    )
-                }
+                    if (
+                        contentState.scans.isNotEmpty()
+                        &&
+                        (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.SCAN)
+                    ) {
+                        scanSection(
+                            scans = contentState.scans,
+                            onScanClick = onScanClick
+                        )
+                    }
 
-                if (
-                    contentState.devices.isNotEmpty()
-                    &&
-                    (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.DEVICE)
-                ) {
-                    deviceSection(
-                        devices = contentState.devices,
-                        expandedDeviceMac = expandedDeviceMac,
-                        onDeviceExpandClick = onDeviceExpandClick,
-                        onScanClick = onScanClick,
-                        expandedDeviceScans = expandedDeviceScans
-                    )
+                    if (
+                        contentState.devices.isNotEmpty()
+                        &&
+                        (selectedCategory == SearchCategory.ALL || selectedCategory == SearchCategory.DEVICE)
+                    ) {
+                        deviceSection(
+                            devices = contentState.devices,
+                            expandedDeviceMac = expandedDeviceMac,
+                            onDeviceExpandClick = onDeviceExpandClick,
+                            onScanClick = onScanClick,
+                            expandedDeviceScans = expandedDeviceScans
+                        )
+                    }
                 }
             }
         }
@@ -334,3 +392,5 @@ private fun LazyListScope.deviceSection(
     }
 
 }
+
+private const val WIDE_LAYOUT_MIN_WIDTH_DP = 600
