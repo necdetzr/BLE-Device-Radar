@@ -45,6 +45,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -494,7 +496,78 @@ private fun ThemeSubSection(
     }
 }
 @Composable
+private fun VersionInfo(){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp, horizontal = 24.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(R.string.feature_settings_version),
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.titleMedium
+        )
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        ){
+            Text(
+                text = stringResource(
+                    R.string.feature_settings_version_value,
+                    getAppVersionName(),
+                ),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                style = MaterialTheme.typography.titleSmall
+
+            )
+        }
+    }
+}
+@Composable
+private fun PrivacyPolicy(uriHandler: UriHandler){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                uriHandler.openUri(PRIVACY_POLICY_URL)
+            }
+            .padding(vertical = 16.dp, horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(
+                text = stringResource(
+                    R.string.feature_settings_privacy_policy,
+                ),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(
+                    R.string.feature_settings_privacy_policy_description,
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+
+        Icon(
+            imageVector = BleIcons.Right,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+@Composable
 private fun AboutSection(){
+    val uriHandler = LocalUriHandler.current
+
     SectionTitle(text = stringResource(R.string.feature_settings_about_system))
     Spacer(Modifier.height(8.dp))
     Box(
@@ -506,39 +579,15 @@ private fun AboutSection(){
                 color = MaterialTheme.colorScheme.outlineVariant,
                 shape = RoundedCornerShape(12.dp)
             )
-            .padding(vertical = 16.dp, horizontal = 24.dp)
     ){
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.feature_settings_version),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ){
-                    Text(
-                        text = stringResource(
-                            R.string.feature_settings_version_value,
-                            getAppVersionName(),
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        style = MaterialTheme.typography.titleSmall
-
-                    )
-                }
-            }
+            VersionInfo()
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
+            PrivacyPolicy(uriHandler)
         }
 
     }
@@ -746,4 +795,6 @@ private fun SectionTitle(
 }
 
 private const val WIDE_LAYOUT_MIN_WIDTH_DP = 600
+private const val PRIVACY_POLICY_URL =
+    "https://necdetzr.com.tr/privacy/ble-device-radar/"
 

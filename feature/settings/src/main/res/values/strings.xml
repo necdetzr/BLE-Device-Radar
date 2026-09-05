@@ -13,6 +13,8 @@
     <string name="feature_settings_system">System</string>
     <string name="feature_settings_about_system">About System</string>
     <string name="feature_settings_version">Version Info</string>
+    <string name="feature_settings_privacy_policy">Privacy Policy</string>
+    <string name="feature_settings_privacy_policy_description">See how BLE scan data is handled</string>
     <string name="feature_settings_danger_zone">Danger Zone</string>
     <string name="feature_settings_delete_scan_history">Delete scan history</string>
     <string name="feature_settings_delete_scan_history_description">Permanently delete all saved scans and observed device history from this device.</string>
