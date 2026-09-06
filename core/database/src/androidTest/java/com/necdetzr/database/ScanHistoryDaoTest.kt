@@ -3,10 +3,10 @@ package com.necdetzr.database
 import androidx.room.Room
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
+import com.necdetzr.database.dao.ScanHistoryDao
 import com.necdetzr.database.entities.BleDeviceEntity
 import com.necdetzr.database.entities.ScanRecordEntity
 import com.necdetzr.model.BleAdvertisement
-import com.necdetzr.model.ScanRecord
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After

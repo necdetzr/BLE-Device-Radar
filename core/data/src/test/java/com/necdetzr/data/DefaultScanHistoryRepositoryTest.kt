@@ -2,7 +2,7 @@ package com.necdetzr.data
 
 import com.google.common.truth.Truth.assertThat
 import com.necdetzr.data.repository.DefaultScanHistoryRepository
-import com.necdetzr.database.ScanHistoryDao
+import com.necdetzr.database.dao.ScanHistoryDao
 import com.necdetzr.database.ScanRecordWithDevices
 import com.necdetzr.database.entities.BleDeviceEntity
 import com.necdetzr.database.entities.ScanRecordEntity

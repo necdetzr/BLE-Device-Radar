@@ -1,14 +1,16 @@
-package com.necdetzr.database
+package com.necdetzr.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.necdetzr.database.ScanRecordWithDevices
 import com.necdetzr.database.entities.BleDeviceEntity
 import com.necdetzr.database.entities.ScanRecordEntity
 import com.necdetzr.database.relations.DeviceSearchSummaryRow
 import kotlinx.coroutines.flow.Flow
+
 @Suppress("TooManyFunctions")
 @Dao
 interface ScanHistoryDao {
@@ -96,7 +98,7 @@ interface ScanHistoryDao {
     )
     fun getScansForDevice(
         macAddress: String
-    ):Flow<List<ScanRecordEntity>>
+    ): Flow<List<ScanRecordEntity>>
 
     @Query("DELETE FROM scan_records")
     suspend fun deleteAllScans()

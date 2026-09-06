@@ -2,7 +2,7 @@ package com.necdetzr.data.repository
 
 import com.necdetzr.data.mapper.toEntity
 import com.necdetzr.data.mapper.toModel
-import com.necdetzr.database.ScanHistoryDao
+import com.necdetzr.database.dao.ScanHistoryDao
 import com.necdetzr.database.entities.ScanRecordEntity
 import com.necdetzr.model.DeviceSearchResult
 import com.necdetzr.model.ScanRecord
