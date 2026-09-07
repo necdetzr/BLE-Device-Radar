@@ -8,12 +8,14 @@ import com.necdetzr.database.dao.FavoriteDeviceDao
 import com.necdetzr.database.dao.ScanHistoryDao
 import com.necdetzr.database.entities.BleDeviceEntity
 import com.necdetzr.database.entities.ScanRecordEntity
+import com.necdetzr.model.FavoriteDevice
 
 
 @Database(
     entities = [
         ScanRecordEntity::class,
-        BleDeviceEntity::class
+        BleDeviceEntity::class,
+        FavoriteDevice::class
     ],
     version = 2,
     exportSchema = true,
