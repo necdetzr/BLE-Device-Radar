@@ -7,6 +7,7 @@ import androidx.room.TypeConverters
 import com.necdetzr.database.dao.FavoriteDeviceDao
 import com.necdetzr.database.dao.ScanHistoryDao
 import com.necdetzr.database.entities.BleDeviceEntity
+import com.necdetzr.database.entities.FavoriteDeviceEntity
 import com.necdetzr.database.entities.ScanRecordEntity
 import com.necdetzr.model.FavoriteDevice
 
@@ -15,7 +16,7 @@ import com.necdetzr.model.FavoriteDevice
     entities = [
         ScanRecordEntity::class,
         BleDeviceEntity::class,
-        FavoriteDevice::class
+        FavoriteDeviceEntity::class
     ],
     version = 2,
     exportSchema = true,
