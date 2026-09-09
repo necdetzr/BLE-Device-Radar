@@ -12,7 +12,15 @@ fun EntryProviderScope<NavKey>.historyEntry(navigator: Navigator){
     entry<HistoryNavKey>{
         HistoryScreen(
             onSearchClick = {
-                navigator.navigate(HistorySearchNavKey)
+                navigator.navigate(HistorySearchNavKey())
+            },
+            onFavoriteDeviceClick = {macAddress->
+                navigator.navigate(
+                    HistorySearchNavKey(
+                        initialQuery = macAddress,
+                        devicesOnly = true
+                    )
+                )
             }
         )
     }

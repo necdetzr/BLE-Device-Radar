@@ -17,6 +17,17 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 defaultConfig.targetSdk = 36
                 defaultConfig.minSdk = 31
                 testOptions.animationsDisabled = true
+                buildTypes {
+                    getByName("release") {
+                        isMinifyEnabled = true
+                        isShrinkResources = true
+
+                        proguardFiles(
+                            getDefaultProguardFile("proguard-android-optimize.txt"),
+                            "proguard-rules.pro",
+                        )
+                    }
+                }
             }
             
             extensions.configure<ApplicationAndroidComponentsExtension> {

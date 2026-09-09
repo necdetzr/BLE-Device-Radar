@@ -2,7 +2,9 @@ package com.necdetzr.data.di
 
 import com.necdetzr.data.repository.BleRadarRepository
 import com.necdetzr.data.repository.DefaultBleRadarRepository
+import com.necdetzr.data.repository.DefaultFavoriteDeviceRepository
 import com.necdetzr.data.repository.DefaultScanHistoryRepository
+import com.necdetzr.data.repository.FavoriteDeviceRepository
 import com.necdetzr.data.repository.OfflineUserDataRepository
 import com.necdetzr.data.repository.ScanHistoryRepository
 import com.necdetzr.data.repository.UserDataRepository
@@ -31,4 +33,9 @@ abstract class DataModule {
     internal abstract fun bindScanHistoryRepository(
         scanHistoryRepository: DefaultScanHistoryRepository
     ) : ScanHistoryRepository
+    @Binds
+    @Singleton
+    internal abstract fun bindFavoriteDeviceRepository(
+        favoriteDeviceRepository: DefaultFavoriteDeviceRepository
+    ) : FavoriteDeviceRepository
 }

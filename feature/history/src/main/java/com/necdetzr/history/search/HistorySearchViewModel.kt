@@ -3,6 +3,7 @@ package com.necdetzr.history.search
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.necdetzr.data.repository.FavoriteDeviceRepository
 import com.necdetzr.data.repository.ScanHistoryRepository
 import com.necdetzr.history.R
 import com.necdetzr.model.DeviceSearchResult
@@ -35,7 +36,8 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class HistorySearchViewModel @Inject constructor(
-    private val scanHistoryRepository: ScanHistoryRepository
+    private val scanHistoryRepository: ScanHistoryRepository,
+    private val favoriteDeviceRepository: FavoriteDeviceRepository
 
 ) : ViewModel(){
 
@@ -43,7 +45,7 @@ class HistorySearchViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow(SearchCategory.ALL)
     private val _expandedDeviceState =
         MutableStateFlow(ExpandedDeviceState())
-
+    private var searchInitialized = false
     private var deviceScansLoadJob: Job? = null
     private val _sheetState = MutableStateFlow(SheetState())
     private var scanLoadJob: Job? = null
@@ -98,6 +100,21 @@ class HistorySearchViewModel @Inject constructor(
         }.onStart {
             emit(HistorySearchContentState.Loading)
         }
+    val isSelectedDeviceFavorite: StateFlow<Boolean> =
+        _sheetState
+            .map { state-> state.selectedDevice }
+            .distinctUntilChanged()
+            .flatMapLatest { device->
+                if(device == null){
+                    flowOf(false)
+                }else{
+                    favoriteDeviceRepository.isFavorite(device.macAddress)
+                }
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = false,
+            )
 
     val uiState : StateFlow<HistorySearchViewState> =
         combine(
@@ -127,7 +144,17 @@ class HistorySearchViewModel @Inject constructor(
 
 
 
+    fun onFavoriteClick() {
+        val device = _sheetState.value.selectedDevice ?: return
+        val shouldBeFavorite = !isSelectedDeviceFavorite.value
 
+        viewModelScope.launch {
+            favoriteDeviceRepository.setFavorite(
+                device = device,
+                shouldBeFavorite = shouldBeFavorite,
+            )
+        }
+    }
     fun onQueryChange(query:String){
         _query.value = query
     }
@@ -157,7 +184,19 @@ class HistorySearchViewModel @Inject constructor(
         }
 
     }
+    fun initializeSearch(
+        initialQuery: String,
+        devicesOnly: Boolean,
+    ) {
+        if (searchInitialized) return
+        searchInitialized = true
 
+        _query.value = initialQuery
+
+        if (devicesOnly) {
+            _selectedCategory.value = SearchCategory.DEVICE
+        }
+    }
     fun onScanClick(scanId: Long) {
         scanLoadJob?.cancel()
 

@@ -3,7 +3,8 @@ package com.necdetzr.database.di
 import android.content.Context
 import androidx.room.Room
 import com.necdetzr.database.BleRadarDatabase
-import com.necdetzr.database.ScanHistoryDao
+import com.necdetzr.database.dao.FavoriteDeviceDao
+import com.necdetzr.database.dao.ScanHistoryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,5 +30,11 @@ object DatabaseModule {
     @Singleton
     fun provideScanHistoryDao(database: BleRadarDatabase) : ScanHistoryDao {
         return database.scanHistoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFavoriteDeviceDao(database: BleRadarDatabase) : FavoriteDeviceDao{
+        return database.favoriteDeviceDao()
     }
 }

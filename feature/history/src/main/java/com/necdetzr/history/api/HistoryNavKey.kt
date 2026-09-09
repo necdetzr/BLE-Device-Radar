@@ -7,4 +7,7 @@ import kotlinx.serialization.Serializable
 object HistoryNavKey : NavKey
 
 @Serializable
-object HistorySearchNavKey: NavKey
+data class HistorySearchNavKey(
+    val initialQuery: String = "",
+    val devicesOnly: Boolean = false
+): NavKey
