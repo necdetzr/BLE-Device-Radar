@@ -35,10 +35,12 @@ import com.necdetzr.ui.util.toReadableDateTime
 @Composable
 fun ScanRecordSheet(
     scanRecordDetail: ScanRecordDetail,
+    isFavorite:Boolean,
     onDismissRequest: () -> Unit,
     onDeviceClick: (ScannedBleDevice) -> Unit,
     selectedDevice: ScannedBleDevice?,
-    onBackClick:()->Unit
+    onBackClick:()->Unit,
+    onFavoriteClick:()->Unit
 
 ) {
     ModalBottomSheet(
@@ -54,7 +56,9 @@ fun ScanRecordSheet(
                 )
             }
             DeviceDetailSheetContent(
-                bleDevice = selectedDevice
+                bleDevice = selectedDevice,
+                isFavorite = isFavorite,
+                onFavoriteClick = onFavoriteClick
             )
         }else{
             ScanRecordSheetContent(

@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +41,7 @@ import com.necdetzr.history.components.HistorySearchMessage
 import com.necdetzr.history.components.HistorySearchPlaceholder
 import com.necdetzr.history.components.ScanRecordCard
 import com.necdetzr.history.components.ScanRecordSheet
+import com.necdetzr.model.FavoriteDevice
 import com.necdetzr.model.ScanRecord
 import com.necdetzr.ui.util.toReadableDateTime
 
@@ -46,16 +49,21 @@ import com.necdetzr.ui.util.toReadableDateTime
 internal fun HistoryScreen(
     modifier: Modifier = Modifier,
     onSearchClick: () -> Unit,
+    onFavoriteDeviceClick: (String) -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ){
     val totalScans by viewModel.totalScans.collectAsStateWithLifecycle()
     val recentScans by viewModel.recentScans.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isFavorite by viewModel.isSelectedDeviceFavorite.collectAsStateWithLifecycle()
+    val favoriteDevices by viewModel.favoriteDevices.collectAsStateWithLifecycle()
     HistoryScreen(
         modifier = modifier,
         totalScans = totalScans,
         recentScans = recentScans,
+        favoriteDevices = favoriteDevices,
         onSearchClick = onSearchClick,
+        onFavoriteDeviceClick = onFavoriteDeviceClick,
         onScanClick = viewModel::onScanClick
     )
     uiState.selectedScan?.let { scan->
@@ -64,7 +72,9 @@ internal fun HistoryScreen(
             onDeviceClick = viewModel::onDeviceClick,
             scanRecordDetail = scan,
             selectedDevice = uiState.selectedDevice,
-            onBackClick =  viewModel::onDeviceDetailBack
+            onBackClick =  viewModel::onDeviceDetailBack,
+            isFavorite = isFavorite,
+            onFavoriteClick = viewModel::onFavoriteClick
         )
     }
 
@@ -74,6 +84,8 @@ internal fun HistoryScreen(
 internal fun HistoryScreen(
     modifier: Modifier = Modifier,
     totalScans:Int,
+    favoriteDevices: List<FavoriteDevice>,
+    onFavoriteDeviceClick: (String) -> Unit,
     onSearchClick:()->Unit,
     onScanClick: (Long) -> Unit,
     recentScans: List<ScanRecord>
@@ -109,6 +121,8 @@ internal fun HistoryScreen(
                     recentScans = recentScans,
                     onSearchClick = onSearchClick,
                     onScanClick = onScanClick,
+                    favoriteDevices = favoriteDevices,
+                    onFavoriteDeviceClick = onFavoriteDeviceClick
                 )
             } else {
                 HistoryCompactContent(
@@ -118,6 +132,8 @@ internal fun HistoryScreen(
                     recentScans = recentScans,
                     onSearchClick = onSearchClick,
                     onScanClick = onScanClick,
+                    favoriteDevices = favoriteDevices,
+                    onFavoriteDeviceClick = onFavoriteDeviceClick
                 )
             }
         }
@@ -131,6 +147,8 @@ private fun HistoryCompactContent(
     lastSeenDescription: String,
     recentScans: List<ScanRecord>,
     onSearchClick: () -> Unit,
+    favoriteDevices: List<FavoriteDevice>,
+    onFavoriteDeviceClick: (String) -> Unit,
     onScanClick: (Long) -> Unit,
 ) {
     Column(
@@ -144,6 +162,12 @@ private fun HistoryCompactContent(
             lastSeenValue = lastSeenValue,
             lastSeenDescription = lastSeenDescription,
             modifier = Modifier.padding(vertical = 16.dp),
+        )
+        FavoriteDevicesSection(
+            favoriteDevices = favoriteDevices,
+            onFavoriteDeviceClick = onFavoriteDeviceClick,
+            modifier = Modifier.padding(bottom = 16.dp),
+
         )
         RecentSection(
             recentScans = recentScans,
@@ -159,6 +183,8 @@ private fun HistoryWideContent(
     lastSeenValue: String,
     lastSeenDescription: String,
     recentScans: List<ScanRecord>,
+    favoriteDevices: List<FavoriteDevice>,
+    onFavoriteDeviceClick: (String) -> Unit,
     onSearchClick: () -> Unit,
     onScanClick: (Long) -> Unit,
 ) {
@@ -169,7 +195,9 @@ private fun HistoryWideContent(
 
 
         Row(
-            modifier = Modifier.fillMaxWidth().weight(1f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.Top,
         ) {
@@ -190,16 +218,107 @@ private fun HistoryWideContent(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-
-            RecentSection(
-                recentScans = recentScans,
-                onScanClick = onScanClick,
+            Column(
                 modifier = Modifier.weight(0.62f),
-            )
+            ) {
+                FavoriteDevicesSection(
+                    favoriteDevices = favoriteDevices,
+                    onFavoriteDeviceClick = onFavoriteDeviceClick,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
+
+                RecentSection(
+                    recentScans = recentScans,
+                    onScanClick = onScanClick,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+
         }
     }
 }
+@Composable
+private fun FavoriteDevicesSection(
+    favoriteDevices: List<FavoriteDevice>,
+    modifier: Modifier = Modifier,
+    onFavoriteDeviceClick: (String) -> Unit
+) {
+    if (favoriteDevices.isEmpty()) return
 
+    Column(modifier = modifier) {
+        Text(
+            text = stringResource(
+                R.string.feature_history_favorite_devices
+            ),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(
+                items = favoriteDevices,
+                key = FavoriteDevice::macAddress,
+            ) { device ->
+                FavoriteDeviceCard(
+                    device = device,
+                    onFavoriteDeviceClick = onFavoriteDeviceClick
+                )
+            }
+        }
+    }
+}
+@Composable
+private fun FavoriteDeviceCard(
+    device: FavoriteDevice,
+    onFavoriteDeviceClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.widthIn(
+            min = 200.dp,
+            max = 260.dp,
+        ),
+        shape = RoundedCornerShape(12.dp),
+        tonalElevation = 1.dp,
+        onClick = { onFavoriteDeviceClick(device.macAddress) }
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(
+                imageVector = BleIcons.Favorite,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = device.deviceName
+                        ?: stringResource(
+                            R.string.feature_history_unknown_device
+                        ),
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                Text(
+                    text = device.macAddress,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
 @Composable
 private fun StatisticsSection(
     totalScans: Int,

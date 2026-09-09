@@ -24,6 +24,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -45,9 +46,13 @@ import com.necdetzr.model.ScanRecord
 fun HistorySearchScreen(
     modifier: Modifier = Modifier,
     onBackButton:()->Unit,
+    initialQuery: String,
+    devicesOnly: Boolean,
     viewModel: HistorySearchViewModel = hiltViewModel(),
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isFavorite by viewModel.isSelectedDeviceFavorite
+        .collectAsStateWithLifecycle()
     HistorySearchScreen(
         modifier = modifier,
         onBackButton = onBackButton,
@@ -67,7 +72,15 @@ fun HistorySearchScreen(
             onDismissRequest = viewModel::onSheetDismissed,
             onDeviceClick = viewModel::onDeviceClick,
             onBackClick = viewModel::onDeviceDetailBack,
-            selectedDevice = uiState.selectedDevice
+            selectedDevice = uiState.selectedDevice,
+            isFavorite = isFavorite,
+            onFavoriteClick = viewModel::onFavoriteClick
+        )
+    }
+    LaunchedEffect(initialQuery, devicesOnly) {
+        viewModel.initializeSearch(
+            initialQuery = initialQuery,
+            devicesOnly = devicesOnly,
         )
     }
 }

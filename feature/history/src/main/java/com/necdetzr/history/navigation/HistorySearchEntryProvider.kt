@@ -7,9 +7,11 @@ import com.necdetzr.history.search.HistorySearchScreen
 import com.necdetzr.navigation.Navigator
 
 fun EntryProviderScope<NavKey>.historySearch(navigator: Navigator){
-    entry<HistorySearchNavKey> {
+    entry<HistorySearchNavKey> {key->
         HistorySearchScreen(
-            onBackButton = { navigator.goBack() }
+            initialQuery = key.initialQuery,
+            devicesOnly = key.devicesOnly,
+            onBackButton = navigator::goBack,
         )
     }
 }

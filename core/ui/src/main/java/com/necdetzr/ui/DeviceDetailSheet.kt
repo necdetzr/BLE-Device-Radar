@@ -65,6 +65,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun DeviceDetailSheet(
     device: ScannedBleDevice,
+    isFavorite: Boolean = false,
+    onFavoriteClick: (() -> Unit)? = null,
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -75,14 +77,18 @@ fun DeviceDetailSheet(
         containerColor = MaterialTheme.colorScheme.background
     ) {
         DeviceDetailSheetContent(
-            bleDevice = device
+            bleDevice = device,
+            isFavorite= isFavorite,
+            onFavoriteClick= onFavoriteClick
         )
     }
 }
-
+@Suppress("LongMethod")
 @Composable
 fun DeviceDetailSheetContent(
-    bleDevice: ScannedBleDevice
+    bleDevice: ScannedBleDevice,
+    isFavorite: Boolean = false,
+    onFavoriteClick: (() -> Unit)? = null,
 ) {
     val clipBoardManager = LocalClipboard.current
     val coroutineScope = rememberCoroutineScope()
@@ -133,6 +139,12 @@ fun DeviceDetailSheetContent(
                 },
                 copied = copied
             )
+            onFavoriteClick?.let { favoriteClick ->
+                FavoriteSection(
+                    onFavoriteClick = favoriteClick,
+                    isFavorite = isFavorite,
+                )
+            }
         }
         RssiCard(
             rssi = bleDevice.rssi,
@@ -141,6 +153,35 @@ fun DeviceDetailSheetContent(
         DeviceInfoGrid(device = bleDevice)
         DetailedInfoSection(bleDevice = bleDevice)
         Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+@Composable
+private fun FavoriteSection(
+    onFavoriteClick: () -> Unit,
+    isFavorite: Boolean
+){
+    IconButton(
+        onClick = onFavoriteClick,
+    ) {
+        Icon(
+            imageVector = if (isFavorite) {
+                BleIcons.Favorite
+            } else {
+                BleIcons.FavoriteBorder
+            },
+            contentDescription = stringResource(
+                if (isFavorite) {
+                    R.string.core_ui_remove_from_favorites
+                } else {
+                    R.string.core_ui_add_to_favorites
+                }
+            ),
+            tint = if (isFavorite) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+        )
     }
 }
 @Composable
@@ -384,7 +425,7 @@ private fun SheetTitle(
     ) {
         Text(
             text = device.name ?: stringResource(R.string.core_ui_unknown_device),
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
