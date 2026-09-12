@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+        <string name="feature_onboarding_scan_title">Discover Nearby Devices</string>
+        <string name="feature_onboarding_scan_description">Scan for nearby Bluetooth Low Energy devices and monitor them in real time.</string>
+
+        <string name="feature_onboarding_details_title">Explore Device Details</string>
+        <string name="feature_onboarding_details_description">Inspect signal strength, advertised services, manufacturer data, and raw advertising packets.</string>
+
+        <string name="feature_onboarding_history_title">Save and Find Later</string>
+        <string name="feature_onboarding_history_description">Save your scans, search through your history, and favorite devices you want to find again.</string>
+
+        <string name="feature_onboarding_next">Next</string>
+        <string name="feature_onboarding_get_started">Get Started</string>
+        <string name="feature_onboarding_skip">Skip</string>
+        <string name="feature_onboarding_app_name">BLE DEVICE RADAR</string>
+
+        <string name="feature_onboarding_preview_device">Nearby Sensor</string>
+        <string name="feature_onboarding_preview_mac" translatable="false">D4:7A:21:8B:3F:10</string>
+        <string name="feature_onboarding_preview_signal">Live signal strength</string>
+        <string name="feature_onboarding_preview_rssi" translatable="false">-62 dBm</string>
+        <string name="feature_onboarding_preview_connectable">Connectable</string>
+        <string name="feature_onboarding_preview_packets">24 packets</string>
+
+        <string name="feature_onboarding_preview_morning_scan">Morning Scan</string>
+        <string name="feature_onboarding_preview_office_scan">Office Scan</string>
+        <string name="feature_onboarding_preview_three_devices">3 devices discovered</string>
+        <string name="feature_onboarding_preview_six_devices">6 devices discovered</string>
+        <string name="feature_onboarding_preview_saved">Saved to history</string>
+</resources>
