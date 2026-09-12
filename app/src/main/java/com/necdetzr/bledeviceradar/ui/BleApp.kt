@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.necdetzr.bledeviceradar.MainActivityUiState
 import com.necdetzr.bledeviceradar.R
 import com.necdetzr.bledeviceradar.navigation.TOP_LEVEL_NAV_ITEMS
 import com.necdetzr.designsystem.component.BleBackground
@@ -37,8 +38,33 @@ import com.necdetzr.history.navigation.historyEntry
 import com.necdetzr.history.navigation.historySearch
 import com.necdetzr.navigation.Navigator
 import com.necdetzr.navigation.toEntries
+import com.necdetzr.onboarding.OnboardingRoute
 import com.necdetzr.radar.navigation.radarEntry
 import com.necdetzr.settings.navigation.settingsEntry
+
+
+@Composable
+internal fun BleAppRoot(
+    uiState: MainActivityUiState,
+    modifier: Modifier = Modifier,
+) {
+    when (uiState) {
+        MainActivityUiState.Loading -> Unit
+
+        is MainActivityUiState.Success -> {
+            if (uiState.userPreferences.hasCompletedOnboarding) {
+                BleApp(
+                    appState = rememberBleAppState(),
+                    modifier = modifier,
+                )
+            } else {
+                OnboardingRoute()
+            }
+        }
+    }
+}
+
+
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -70,6 +96,7 @@ internal fun BleApp(
         }
     }
 }
+
 private fun bleNavigationItems(
     scope: BleNavigationSuiteScope,
     appState: BleAppState,
