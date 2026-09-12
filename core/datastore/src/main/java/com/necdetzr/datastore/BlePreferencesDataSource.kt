@@ -2,6 +2,7 @@ package com.necdetzr.datastore
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -24,6 +25,7 @@ class BlePreferencesDataSource @Inject constructor(
         val SORT_TYPE = stringPreferencesKey("sort_type")
         val SCAN_PERIOD = longPreferencesKey("scan_period")
         val RSSI_RANGE = intPreferencesKey("rssi_range")
+        val COMPLETED_ONBOARDING = booleanPreferencesKey("complete_onboarding")
     }
     val userData: Flow<UserPreferences> = dataStore.data
         .catch { exception->
@@ -51,7 +53,8 @@ class BlePreferencesDataSource @Inject constructor(
                 themeConfig = themeConfig,
                 sortType = sortType,
                 scanPeriod = preferences[PreferencesKeys.SCAN_PERIOD] ?: 30_000L,
-                rssiRange = preferences[PreferencesKeys.RSSI_RANGE] ?: -90
+                rssiRange = preferences[PreferencesKeys.RSSI_RANGE] ?: -90,
+                hasCompletedOnboarding = preferences[PreferencesKeys.COMPLETED_ONBOARDING] ?: false
             )
 
         }
@@ -73,6 +76,11 @@ class BlePreferencesDataSource @Inject constructor(
     suspend fun updateRssiRange(rssiRange:Int){
         dataStore.edit { preferences->
             preferences[PreferencesKeys.RSSI_RANGE] = rssiRange
+        }
+    }
+    suspend fun setOnboardingCompleted() {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.COMPLETED_ONBOARDING] = true
         }
     }
 }

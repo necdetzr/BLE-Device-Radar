@@ -27,4 +27,8 @@ class OfflineUserDataRepository @Inject constructor(
     override suspend fun setRssiRange(rssiRange: Int) {
         blePreferencesDataSource.updateRssiRange(rssiRange)
     }
+
+    override suspend fun setOnboardingCompleted() {
+        blePreferencesDataSource.setOnboardingCompleted()
+    }
 }

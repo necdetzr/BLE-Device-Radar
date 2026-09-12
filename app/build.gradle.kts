@@ -8,8 +8,9 @@ plugins {
 android {
     namespace = "com.necdetzr.bledeviceradar"
     defaultConfig {
-        versionCode = 1
-        versionName = "0.1.0"
+        applicationId = "com.necdetzr.bledeviceradar"
+        versionCode = 3
+        versionName = "0.2.0"
     }
 }
 
@@ -36,5 +37,6 @@ dependencies {
     implementation(project(":feature:radar"))
     implementation(project(":feature:history"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:onboarding"))
 
 }

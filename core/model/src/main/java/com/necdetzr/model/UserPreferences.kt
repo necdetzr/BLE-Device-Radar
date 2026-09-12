@@ -4,5 +4,6 @@ data class UserPreferences(
     val themeConfig: ThemeConfig,
     val sortType: SortType,
     val scanPeriod: Long,
-    val rssiRange: Int
+    val rssiRange: Int,
+    val hasCompletedOnboarding: Boolean
 )
