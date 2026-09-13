@@ -31,4 +31,7 @@ class OfflineUserDataRepository @Inject constructor(
     override suspend fun setOnboardingCompleted() {
         blePreferencesDataSource.setOnboardingCompleted()
     }
+    override suspend fun recordSuccessfulSave(): Boolean {
+        return blePreferencesDataSource.recordSuccessfulSave()
+    }
 }

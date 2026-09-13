@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -36,13 +37,23 @@ import com.necdetzr.ui.DeviceDetailSheet
 @SuppressLint("LocalContextGetResourceValueCall", "VisibleForTests")
 @Composable
 internal fun RadarRoute(
+    onRequestReview:()->Unit,
     modifier: Modifier = Modifier,
     viewModel: RadarViewModel = hiltViewModel(),
 ) {
     val stateHolder = rememberRadarStateHolder()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedDevice by viewModel.selectedDevice.collectAsStateWithLifecycle()
-
+    val currentOnRequestReview by rememberUpdatedState(onRequestReview)
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                RadarUiEvent.RequestReview -> {
+                    currentOnRequestReview()
+                }
+            }
+        }
+    }
     BleHardwareEffect(
         stateHolder = stateHolder,
         onBluetoothTurnedOff = viewModel::onStopButtonClicked,

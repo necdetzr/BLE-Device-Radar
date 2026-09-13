@@ -33,6 +33,7 @@ class OfflineUserDataRepositoryTest {
             sortType = SortType.BY_RSSI,
             scanPeriod = 5_000L,
             rssiRange = -70,
+            hasCompletedOnboarding = false
         )
 
         every {

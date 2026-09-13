@@ -26,6 +26,8 @@ class BlePreferencesDataSource @Inject constructor(
         val SCAN_PERIOD = longPreferencesKey("scan_period")
         val RSSI_RANGE = intPreferencesKey("rssi_range")
         val COMPLETED_ONBOARDING = booleanPreferencesKey("complete_onboarding")
+        val SUCCESSFUL_SAVE_COUNT = intPreferencesKey("successful_save_count")
+        val HAS_REQUESTED_REVIEW = booleanPreferencesKey("has_requested_review")
     }
     val userData: Flow<UserPreferences> = dataStore.data
         .catch { exception->
@@ -82,5 +84,32 @@ class BlePreferencesDataSource @Inject constructor(
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.COMPLETED_ONBOARDING] = true
         }
+    }
+    suspend fun recordSuccessfulSave(): Boolean {
+        var shouldRequestReview = false
+
+        dataStore.edit { preferences ->
+            val successfulSaveCount =
+                (preferences[PreferencesKeys.SUCCESSFUL_SAVE_COUNT] ?: 0) + 1
+
+            val hasRequestedReview =
+                preferences[PreferencesKeys.HAS_REQUESTED_REVIEW] ?: false
+
+            preferences[PreferencesKeys.SUCCESSFUL_SAVE_COUNT] =
+                successfulSaveCount
+
+            if (
+                !hasRequestedReview &&
+                successfulSaveCount >= REVIEW_SAVE_THRESHOLD
+            ) {
+                preferences[PreferencesKeys.HAS_REQUESTED_REVIEW] = true
+                shouldRequestReview = true
+            }
+        }
+
+        return shouldRequestReview
+    }
+    private companion object {
+        const val REVIEW_SAVE_THRESHOLD = 3
     }
 }

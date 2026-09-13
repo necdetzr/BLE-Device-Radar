@@ -6,8 +6,11 @@ import com.necdetzr.navigation.Navigator
 import com.necdetzr.radar.RadarRoute
 import com.necdetzr.radar.api.RadarNavKey
 @Suppress("UnusedParameter")
-fun EntryProviderScope<NavKey>.radarEntry(navigator: Navigator){
+fun EntryProviderScope<NavKey>.radarEntry(
+    navigator: Navigator,
+    onRequestReview:()->Unit
+){
     entry<RadarNavKey> {
-        RadarRoute()
+        RadarRoute(onRequestReview)
     }
 }

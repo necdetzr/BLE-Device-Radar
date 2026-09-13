@@ -12,4 +12,5 @@ interface UserDataRepository {
     suspend fun setScanPeriod(scanPeriod: Long)
     suspend fun setRssiRange(rssiRange: Int)
     suspend fun setOnboardingCompleted()
+    suspend fun recordSuccessfulSave(): Boolean
 }

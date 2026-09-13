@@ -10,9 +10,11 @@ import com.necdetzr.radar.util.ScannedBleDeviceUtils.updateScannedDevice
 import com.necdetzr.ui.DeviceFeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
@@ -34,9 +36,14 @@ class RadarViewModel @Inject constructor(
 ): ViewModel() {
     private val _uiState = MutableStateFlow(RadarScreenState())
     val uiState : StateFlow<RadarScreenState> = _uiState.asStateFlow()
+
     private var scanJob: Job? = null
 
+    private val _events = MutableSharedFlow<RadarUiEvent>()
+    internal val events = _events.asSharedFlow()
+
     private val _selectedMacAddress = MutableStateFlow<String?>(null)
+
     val selectedDevice: StateFlow<ScannedBleDevice?> = combine(
         _uiState,
         _selectedMacAddress
@@ -136,6 +143,20 @@ class RadarViewModel @Inject constructor(
         }
 
     }
+    private suspend fun requestReviewIfEligible() {
+        try {
+            val shouldRequestReview =
+                userDataRepository.recordSuccessfulSave()
+
+            if (shouldRequestReview) {
+                _events.emit(RadarUiEvent.RequestReview)
+            }
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (_: Exception) {
+
+        }
+    }
     fun onSaveRecordClick(name: String) {
         viewModelScope.launch {
             val state = _uiState.value
@@ -157,6 +178,7 @@ class RadarViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(showAlertDialog = false)
                 }
+                requestReviewIfEligible()
             } catch (exception: CancellationException) {
                 throw exception
             } catch (_: Exception) {
@@ -190,4 +212,8 @@ sealed interface RadarUserMessage {
     data object ScanFailed : RadarUserMessage
     data object BluetoothEnableDenied : RadarUserMessage
     data object SaveFailed : RadarUserMessage
+}
+
+sealed interface RadarUiEvent {
+    data object RequestReview : RadarUiEvent
 }

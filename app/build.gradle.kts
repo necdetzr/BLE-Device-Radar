@@ -9,8 +9,8 @@ android {
     namespace = "com.necdetzr.bledeviceradar"
     defaultConfig {
         applicationId = "com.necdetzr.bledeviceradar"
-        versionCode = 3
-        versionName = "0.2.0"
+        versionCode = 4
+        versionName = "0.2.1"
     }
 }
 
@@ -26,7 +26,8 @@ dependencies {
     api(libs.androidx.compose.material3.adaptive)
     implementation(libs.androidx.compose.material3.adaptive.navigation3)
     implementation(libs.androidx.core.splashscreen)
-
+    implementation(libs.play.review)
+    implementation(libs.play.review.ktx)
     implementation(project(":core:designsystem"))
     implementation(project(":core:common"))
     implementation(project(":core:navigation"))
