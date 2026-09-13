@@ -74,6 +74,7 @@ internal fun BleApp(
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo(),
 ) {
     val navigator = remember { Navigator(appState.navigationState) }
+    val requestReview = rememberInAppReviewLauncher()
 
     BleBackground(modifier = modifier) {
         BleNavigationSuiteScaffold(
@@ -90,7 +91,8 @@ internal fun BleApp(
                 BleAppContent(
                     appState = appState,
                     navigator = navigator,
-                    paddingValues = paddingValues
+                    paddingValues = paddingValues,
+                    onRequestReview = requestReview
                 )
             }
         }
@@ -126,6 +128,7 @@ private fun bleNavigationItems(
 private fun BleAppContent(
     appState: BleAppState,
     navigator: Navigator,
+    onRequestReview: () -> Unit,
     paddingValues: PaddingValues,
     modifier: Modifier = Modifier
 ) {
@@ -156,7 +159,7 @@ private fun BleAppContent(
         ) {
             val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
             val entryProvider = entryProvider {
-                radarEntry(navigator)
+                radarEntry(navigator,onRequestReview)
                 historyEntry(navigator)
                 settingsEntry(navigator)
                 historySearch(navigator)
